@@ -1,0 +1,60 @@
+<div class="workorder-grid">
+  <section class="sidebar">
+    <div class="grid-header">
+      <div class="grid-header-row">
+        <div class="sidebar-title">Work Center</div>
+      </div>
+    </div>
+
+    <div class="sidebar-body">
+      @for (wc of workOrdersGroupedByWorkCenterAsArray(); track wc.workCenterId) {
+        <div class="sidebar-row">{{ wc.workCenterId }}</div>
+      }
+    </div>
+  </section>
+
+  <section class="timeline" #timelineContainer>
+    <div class="grid">
+      <div class="grid-header">
+        <div class="grid-header-row timescales">
+          @for (date of timelineDates(); track date.label) {
+            <div class="grid-col timescales-col" [style.width.px]="colWidth()">
+              {{ date.label }}
+            </div>
+          }
+        </div>
+      </div>
+
+      <div
+        class="grid-body"
+        #timescalesBodyContainer
+        (mousemove)="onMouseMoveInGrid($event)"
+        (mouseleave)="onMouseLeaveGrid()"
+      >
+        @for (wc of workOrdersGroupedByWorkCenterAsArray(); track wc.workCenterId; let i = $index) {
+          <div class="grid-row" (mouseenter)="onRowHover(wc.workCenterId)">
+            <nl-timeline-row
+              [rowIndex]="i"
+              [workOrders]="wc.workOrders"
+              [dates]="timelineDates()"
+              (workOrderHovered)="onWorkOrderHover($event)"
+            >
+            </nl-timeline-row>
+          </div>
+        }
+
+        <div
+          #workorderPreviewCard
+          class="nl-workorder-preview-card"
+          [style.width.px]="previewCardWidth()"
+          [style.left.px]="previewCardStyles().left"
+          [style.top.px]="previewCardStyles().top"
+          [style.display]="previewCardStyles().display"
+          (click)="onCreateWorkorder($event)"
+          role="button"
+          tabindex="0"
+        ></div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,75 @@
+:host {
+  overflow: hidden;
+}
+
+.nl-workorders-container {
+  padding-top: 45px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.nl-workorders-header {
+  margin-bottom: 26px;
+}
+
+.nl-workorders-content {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  overflow: hidden;
+}
+
+.nl-workorders-header-title {
+  color: rgba(3, 9, 41, 1);
+  font-size: 24px;
+  font-weight: 500;
+  font-style: medium;
+}
+
+.nl-workorders-filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.nl-workorders-timescale-filter-button {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 1px 2.5px 3px -1.5px rgba(200, 207, 233, 1);
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 1);
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.nl-workorders-timescale-filter-label {
+  color: var(--nl-color-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 4px 8px 5px 8px;
+  background-color: rgba(241, 243, 248, 1);
+}
+
+.nl-workorders-timescale-filter-selection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 4px 8px 5px 8px;
+
+  &__text {
+    color: var(--nl-color-primary);
+    font-weight: 500;
+  }
+}
+
+.nl-workorders-timescale-filter-selection__icon {
+  .nl-workorders-timescale-filter-button[data-opened='true'] & {
+    color: var(--nl-color-primary);
+  }
+}

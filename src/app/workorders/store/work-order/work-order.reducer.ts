@@ -1,0 +1,101 @@
+import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
+import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
+import { createFeature, createReducer, on } from '@ngrx/store';
+import {
+  createWorkOrderFailure,
+  createWorkOrderSuccess,
+  loadTimeScaleConfigSuccess,
+  loadWorkOrdersSuccess,
+  openCreateWorkOrderForm,
+  setTimescaleConfig,
+  setWorkOrderFormOpenState,
+} from './work-order.actions';
+import { NewWorkOrder } from '@common/types/new-work-order.interface';
+import { FormError } from '@common/types/form-error.interface';
+
+interface WorkOrderState {
+  workOrders: WorkOrderDocument[];
+  workCenters: WorkCenterDocument[];
+  timescaleConfig: TimescaleConfig;
+  isWorkOrderFormOpen: boolean;
+  newWorkOrder: NewWorkOrder | null;
+  newWorkOrderError: FormError | null;
+}
+
+export const initialWorkOrderState: WorkOrderState = {
+  workOrders: [],
+  workCenters: [],
+  timescaleConfig: TimescalesConfig[Timescale.Week],
+  isWorkOrderFormOpen: false,
+  newWorkOrder: null,
+  newWorkOrderError: null,
+};
+
+export const workOrderFeature = createFeature({
+  name: 'workorder',
+  reducer: createReducer<WorkOrderState>(
+    initialWorkOrderState,
+
+    on(loadWorkOrdersSuccess, (state, { workOrders, workCenters }) => {
+      return {
+        ...state,
+        workOrders: workOrders,
+        workCenters: workCenters,
+      };
+    }),
+
+    on(loadTimeScaleConfigSuccess, (state, { config }) => {
+      return {
+        ...state,
+        timescaleConfig: config,
+      };
+    }),
+
+    on(setTimescaleConfig, (state, { config }) => {
+      return {
+        ...state,
+        timescaleConfig: config,
+      };
+    }),
+
+    on(setWorkOrderFormOpenState, (state, { open }) => {
+      return {
+        ...state,
+        isWorkOrderFormOpen: open,
+      };
+    }),
+
+    on(openCreateWorkOrderForm, (state, { date, workCenterId }) => {
+      return {
+        ...state,
+        isWorkOrderFormOpen: true,
+        newWorkOrder: {
+          title: '',
+          startDate: date,
+          endDate: date,
+          status: 'open',
+          workCenterId: workCenterId,
+        },
+        newWorkOrderError: null,
+      };
+    }),
+
+    on(createWorkOrderSuccess, (state, { workOrders }) => {
+      return {
+        ...state,
+        workOrders: workOrders,
+        isWorkOrderFormOpen: false,
+        newWorkOrder: null,
+        newWorkOrderError: null,
+      };
+    }),
+
+    on(createWorkOrderFailure, (state, { error }) => {
+      return {
+        ...state,
+        newWorkOrderError: error,
+      };
+    }),
+  ),
+});

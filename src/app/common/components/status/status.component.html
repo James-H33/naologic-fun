@@ -1,0 +1,9 @@
+<div
+  class="nl-status-container"
+  [style.--background-color]="statusColors[status()].primaryBackground || 'gray'"
+  [style.--border-color]="statusColors[status()].border || 'gray'"
+>
+  <span class="nl-status-text" [style.color]="statusColors[status()].primary || 'white'">
+    {{ status() }}
+  </span>
+</div>

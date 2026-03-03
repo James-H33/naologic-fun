@@ -1,0 +1,6 @@
+.main {
+  padding-left: var(--nl-main-content-indent);
+  height: calc(100vh - var(--nl-nav-height));
+  // width: calc(100vw - var(--nl-main-content-indent));
+  overflow-x: hidden;
+}

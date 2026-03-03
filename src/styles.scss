@@ -1,0 +1,43 @@
+@use './app/common/common.styles' as *;
+@use '@angular/cdk' as cdk;
+@use 'bootstrap/scss/bootstrap' as *;
+
+*, p, h1, h2, h3, h4, h5, h6, ul, ol, li, a, span, div {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+button {
+  outline: none;
+  border: none;
+  background: none;
+}
+
+body {
+  font-family: 'Circular-Std';
+  font-optical-sizing: auto;
+  overflow-x: hidden;
+}
+
+:root {
+  --nl-main-content-indent: 101px;
+
+  // Colors
+  --nl-color-primary: rgba(62, 64, 219, 1);
+  --nl-color-primary-hover: rgba(62, 64, 219, 0.8);
+  --nl-color-default: rgba(3, 9, 41, 1);
+  --nl-color-error: rgba(255, 77, 79, 1);
+  --nl-color-secondary: rgba(104, 113, 150, 1);
+  --nl-background-main: rgba(255, 255, 255, 1);
+
+  // Global
+  --nl-nav-height: 50px;
+
+  // Borders
+  --nl-border-default: rgba(200, 207, 233, 1);
+}
+
+.nl-dropdown-menu-default {
+}
+

@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  width: auto;
+  height: 100%;
+  position: relative;
+}
+
+.timeline-item {
+  --background-color: rgba(237, 238, 255, 1);
+  --border-color: rgba(222, 224, 255, 1);
+
+  display: flex;
+  align-items: center;
+  height: 38px;
+  box-shadow: 0 0 0 1px var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-color);
+  color: var(--nl-color-default);
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  margin-top: 4px;
+  padding: 10px 8px 10px 8px;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.timeline-item-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.timeline-item-name {
+  min-width: 30px;
+  text-overflow: ellipsis;
+  text-wrap: nowrap;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 400;
+}

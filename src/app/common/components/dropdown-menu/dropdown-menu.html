@@ -1,0 +1,9 @@
+<div [cdkMenuTriggerFor]="menu">
+  <ng-content select="[contextTrigger]"> </ng-content>
+</div>
+
+<ng-template class="dropdown-menu" #menu>
+  <div cdkMenu>
+    <ng-content select="[contextMenu]"></ng-content>
+  </div>
+</ng-template>

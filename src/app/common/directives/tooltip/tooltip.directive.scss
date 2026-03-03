@@ -1,0 +1,30 @@
+.nl-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate3d(-50%, 10%, 0);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  margin-bottom: 6px;
+  opacity: 0;
+  z-index: 10;
+  animation: TooltipSlideUp 0.2s ease forwards 0.3s;
+  // transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+@keyframes TooltipSlideUp {
+  from {
+    transform: translate3d(-50%, 10%, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+    opacity: 1;
+  }
+}

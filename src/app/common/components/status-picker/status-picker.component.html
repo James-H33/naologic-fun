@@ -1,0 +1,18 @@
+<nl-dropdown-menu
+  (opened)="trigger()?.setAttribute('data-opened', 'true')"
+  (closed)="trigger()?.removeAttribute('data-opened')"
+>
+  <div contextTrigger>
+    <ng-content></ng-content>
+  </div>
+
+  <nl-dropdown-list
+    contextMenu
+    class="nl-dropdown-menu-default"
+    [hostElement]="hostElement()"
+    [items]="statusOptions"
+    [selectedItem]="status()"
+    (selectionChange)="onStatusChange($event)"
+  >
+  </nl-dropdown-list>
+</nl-dropdown-menu>

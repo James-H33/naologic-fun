@@ -1,0 +1,32 @@
+@for (workOrder of workOrdersWithPostion(); track workOrder.docId) {
+  <div
+    class="timeline-item"
+    [style.--background-color]="
+      workOrderStatusColors[workOrder.data.status].backgroundSecondary || 'gray'
+    "
+    [style.--border-color]="workOrderStatusColors[workOrder.data.status].border || 'gray'"
+    [style.left.px]="workOrder.left"
+    [style.width.px]="workOrder.width"
+    (mouseenter)="onWorkOrderHover(workOrder)"
+    (mouseleave)="onWorkOrderHover(null)"
+    nlTooltip
+    [nlTooltipTemplate]="tooltipTemplate"
+  >
+    <div class="timeline-item-content">
+      <span class="timeline-item-name">
+        {{ workOrder.data.name }}
+      </span>
+
+      <nl-status [status]="workOrder.data.status" class="timeline-item-status"> </nl-status>
+    </div>
+
+    <ng-template #tooltipTemplate>
+      <span>{{ workOrder.data.name }}</span> |
+
+      <span>
+        {{ workOrder.data.startDate | date: 'MMM d' }} -
+        {{ workOrder.data.endDate | date: 'MMM d, yyyy' }}
+      </span>
+    </ng-template>
+  </div>
+}
