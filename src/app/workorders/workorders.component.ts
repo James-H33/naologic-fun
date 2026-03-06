@@ -90,8 +90,6 @@ export class WorkordersComponent implements OnInit {
   }
 
   onDeleteWorkOrder(workOrderId: string) {
-    console.log('Delete work order with ID:', workOrderId);
-
     this.store.dispatch(
       deleteWorkOrder({
         workOrderId,
@@ -101,11 +99,6 @@ export class WorkordersComponent implements OnInit {
 
   onEditWorkOrder(workOrderId: string) {
     console.log('Edit work order with ID:', workOrderId);
-    // this.store.dispatch(
-    //   editWorkOrder({
-    //     workOrderId,
-    //   }),
-    // );
   }
 
   onWorkOrderCreated(event: { workOrder: NewWorkOrder }) {

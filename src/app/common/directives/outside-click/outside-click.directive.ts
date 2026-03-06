@@ -1,9 +1,9 @@
-import { AfterViewInit, Directive, ElementRef, HostListener, inject, output } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject, output } from '@angular/core';
 
 @Directive({
   selector: '[nlOutsideClick]',
 })
-export class ClickOutsideDirective implements AfterViewInit {
+export class ClickOutsideDirective {
   clickedOutside = output();
 
   elementRef = inject(ElementRef);
@@ -15,9 +15,5 @@ export class ClickOutsideDirective implements AfterViewInit {
     if (!clickedInside) {
       this.clickedOutside.emit();
     }
-  }
-
-  ngAfterViewInit(): void {
-    console.log('ElementRef in directive:', this.elementRef);
   }
 }
