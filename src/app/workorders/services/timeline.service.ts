@@ -44,29 +44,6 @@ export class TimelineService {
     return { relativeX, relativeY };
   }
 
-  getFormulaForDateByClickPosition(scale: Timescale, dateIndex: number, relativeX: number): Date {
-    const dates = this.timelineDates();
-    const date = dates[dateIndex];
-    const colWidth = this.config()?.colWidth ?? 0;
-
-    if (scale === Timescale.Month) {
-      const daysInMonth = moment(date.date).daysInMonth();
-      const day = Math.ceil((relativeX % colWidth) / (colWidth / daysInMonth));
-
-      return moment(date.date).date(day).toDate();
-    }
-
-    if (scale === Timescale.Week) {
-      const day = Math.ceil((relativeX % colWidth) / (colWidth / 7));
-
-      return moment(date.date)
-        .add(day - 1, 'day')
-        .toDate();
-    }
-
-    return date.date;
-  }
-
   getPositionOfDate(date: Date): number {
     const scale = this.config()?.scale;
     const dates = this.timelineDates();
@@ -130,8 +107,34 @@ export class TimelineService {
     return { left, width };
   }
 
-  // This won't work correctly for months with different number of days, but it's a starting point. We can refine the logic later to account for varying month lengths.
-  getWidthOfDayBasedOnScale(scale: Timescale): number {
+  private getFormulaForDateByClickPosition(
+    scale: Timescale,
+    dateIndex: number,
+    relativeX: number,
+  ): Date {
+    const dates = this.timelineDates();
+    const date = dates[dateIndex];
+    const colWidth = this.config()?.colWidth ?? 0;
+
+    if (scale === Timescale.Month) {
+      const daysInMonth = moment(date.date).daysInMonth();
+      const day = Math.ceil((relativeX % colWidth) / (colWidth / daysInMonth));
+
+      return moment(date.date).date(day).toDate();
+    }
+
+    if (scale === Timescale.Week) {
+      const day = Math.ceil((relativeX % colWidth) / (colWidth / 7));
+
+      return moment(date.date)
+        .add(day - 1, 'day')
+        .toDate();
+    }
+
+    return date.date;
+  }
+
+  private getWidthOfDayBasedOnScale(scale: Timescale): number {
     const colWidth = this.config()?.colWidth;
 
     if (scale === Timescale.Month) {
@@ -145,7 +148,7 @@ export class TimelineService {
     return colWidth; // In day or hour view, the column represents a day or hour respectively
   }
 
-  generateTimelineColumns(
+  private generateTimelineColumns(
     config: TimescaleConfig,
     start: Date,
     end: Date,
@@ -153,11 +156,9 @@ export class TimelineService {
     const scale = config.scale;
     const result: { label: string; date: Date }[] = [];
     const current = moment(start).startOf(scale);
-    // const labelFormat = scale === Timescale.Month ? 'MMM YYYY' : 'MMM D, YYYY';
 
     while (current.toDate() <= end) {
       result.push({
-        // label: current.format(labelFormat),
         label: this.getDateLabel(current.toDate(), scale),
         date: current.toDate(),
       });

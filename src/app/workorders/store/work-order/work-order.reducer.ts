@@ -5,6 +5,7 @@ import { createFeature, createReducer, on } from '@ngrx/store';
 import {
   createWorkOrderFailure,
   createWorkOrderSuccess,
+  deleteWorkOrderSuccess,
   loadTimeScaleConfigSuccess,
   loadWorkOrdersSuccess,
   openCreateWorkOrderForm,
@@ -95,6 +96,13 @@ export const workOrderFeature = createFeature({
       return {
         ...state,
         newWorkOrderError: error,
+      };
+    }),
+
+    on(deleteWorkOrderSuccess, (state, { workOrders }) => {
+      return {
+        ...state,
+        workOrders: workOrders,
       };
     }),
   ),

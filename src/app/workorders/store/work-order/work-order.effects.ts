@@ -18,6 +18,8 @@ import {
   createWorkOrder,
   createWorkOrderFailure,
   createWorkOrderSuccess,
+  deleteWorkOrder,
+  deleteWorkOrderSuccess,
   loadTimeScaleConfigStart,
   loadTimeScaleConfigSuccess,
   loadWorkOrdersStart,
@@ -158,6 +160,27 @@ export const createWorkOrder$ = createEffect(
             const updatedWorkOrders = [...workOrders, newWorkOrder];
 
             return createWorkOrderSuccess({ workOrders: updatedWorkOrders });
+          }),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const deleteWorkOrder$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(deleteWorkOrder),
+      concatLatestFrom(() => [store.select(selectWorkOrders)]),
+      switchMap(([action, workOrders]) => {
+        const { workOrderId } = action;
+
+        const updatedWorkOrders = workOrders.filter((wo) => wo.docId !== workOrderId);
+
+        return timer(200).pipe(
+          map(() => {
+            return deleteWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),

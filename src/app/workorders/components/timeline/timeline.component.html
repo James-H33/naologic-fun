@@ -38,6 +38,8 @@
               [workOrders]="wc.workOrders"
               [dates]="timelineDates()"
               (workOrderHovered)="onWorkOrderHover($event)"
+              (deleteWorkOrder)="deleteWorkOrder.emit($event)"
+              (editWorkOrder)="editWorkOrder.emit($event)"
             >
             </nl-timeline-row>
           </div>

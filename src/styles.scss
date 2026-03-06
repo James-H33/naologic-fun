@@ -2,6 +2,8 @@
 @use '@angular/cdk' as cdk;
 @use 'bootstrap/scss/bootstrap' as *;
 
+@include cdk.overlay();
+
 *, p, h1, h2, h3, h4, h5, h6, ul, ol, li, a, span, div {
   margin: 0;
   padding: 0;
@@ -38,6 +40,9 @@ body {
   --nl-border-default: rgba(200, 207, 233, 1);
 }
 
-.nl-dropdown-menu-default {
+.cdk-overlay-pane-default {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
-

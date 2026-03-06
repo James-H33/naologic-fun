@@ -9,6 +9,7 @@ import { CreateWorkOrderComponent } from './components/create-work-order/create-
 import { TimelineComponent } from './components/timeline/timeline.component';
 import {
   createWorkOrder,
+  deleteWorkOrder,
   loadTimeScaleConfigStart,
   loadWorkOrdersStart,
   openCreateWorkOrderForm,
@@ -86,6 +87,25 @@ export class WorkordersComponent implements OnInit {
     this.store.dispatch(
       openCreateWorkOrderForm({ date: event.date, workCenterId: event.workCenterId }),
     );
+  }
+
+  onDeleteWorkOrder(workOrderId: string) {
+    console.log('Delete work order with ID:', workOrderId);
+
+    this.store.dispatch(
+      deleteWorkOrder({
+        workOrderId,
+      }),
+    );
+  }
+
+  onEditWorkOrder(workOrderId: string) {
+    console.log('Edit work order with ID:', workOrderId);
+    // this.store.dispatch(
+    //   editWorkOrder({
+    //     workOrderId,
+    //   }),
+    // );
   }
 
   onWorkOrderCreated(event: { workOrder: NewWorkOrder }) {
