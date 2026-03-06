@@ -41,6 +41,8 @@ export class TimelineComponent implements AfterViewInit {
   );
 
   createWorkOrder = output<{ date: Date; workCenterId: string }>();
+  deleteWorkOrder = output<WorkOrderDocument['docId']>();
+  editWorkOrder = output<WorkOrderDocument['docId']>();
 
   workOrdersGroupedByWorkCenterAsArray = computed(() => {
     const workOrdersGroupedByWorkCenter = this.workOrdersGroupedByWorkCenter() || {};

@@ -69,6 +69,8 @@
 }
 
 .nl-workorders-timescale-filter-selection__icon {
+  display: inline-flex;
+  align-items: center;
   .nl-workorders-timescale-filter-button[data-opened='true'] & {
     color: var(--nl-color-primary);
   }

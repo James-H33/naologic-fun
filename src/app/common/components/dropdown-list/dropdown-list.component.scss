@@ -23,7 +23,17 @@
   color: rgba(47, 48, 89, 1);
   font-size: 14px;
   font-weight: 400;
-  padding: 5px 38px 5px 12px;
+  padding: 5px 12px 5px 12px;
+
+  &.has-icon {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  &--danger:hover {
+    color: var(--nl-color-error);
+  }
 
   &--active {
     color: var(--nl-color-primary);
@@ -33,4 +43,11 @@
     background-color: rgba(241, 243, 248, 1);
     cursor: pointer;
   }
+}
+
+.dropdown-list-item-icon {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 10px;
+  justify-self: end;
 }

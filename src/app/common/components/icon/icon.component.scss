@@ -1,4 +1,14 @@
-svg {
+:host {
+  display: contents;
+}
+
+span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+svg, .nl-svg {
   color: inherit;
   width: 1em;
   height: 1em;

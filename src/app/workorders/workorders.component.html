@@ -41,6 +41,8 @@
       [workOrdersGroupedByWorkCenter]="workOrdersGroupedByWorkCenter()"
       [timescaleConfig]="timescaleConfig()"
       (createWorkOrder)="onCreateWorkOrder($event)"
+      (deleteWorkOrder)="onDeleteWorkOrder($event)"
+      (editWorkOrder)="onEditWorkOrder($event)"
     >
     </nl-timeline>
   </div>

@@ -2,13 +2,23 @@
   @for (item of items(); track item.id) {
     <div
       class="dropdown-list-item"
+      [class.has-icon]="item.icon"
+      [class.dropdown-list-item--danger]="item.opts?.textColor === 'danger'"
       [class.dropdown-list-item--active]="item.id === selectedItem()"
       (click)="selectionChange.emit(item)"
       (keydown.enter)="selectionChange.emit(item)"
       role="button"
       tabindex="0"
     >
-      {{ item.title }}
+      <span>
+        {{ item.title }}
+      </span>
+
+      @if (item.icon) {
+        <span class="dropdown-list-item-icon">
+          <nl-icon [icon]="item.icon"></nl-icon>
+        </span>
+      }
     </div>
   }
 </div>

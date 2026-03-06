@@ -3,12 +3,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  ElementRef,
   input,
   output,
   viewChild,
 } from '@angular/core';
 import { take } from 'rxjs';
+
+function convert<T>(v: unknown) {
+  return v as unknown as T;
+}
 
 @Component({
   selector: 'nl-dropdown-menu',
@@ -18,9 +21,12 @@ import { take } from 'rxjs';
   imports: [CdkMenuTrigger, CdkMenu],
 })
 export class DropdownMenuComponent {
+  hostElement = input<HTMLElement>(null!);
   menuOffsetY = input<number>(4);
   cdkMenu = viewChild(CdkMenu);
   cdkMenuTrigger = viewChild(CdkMenuTrigger);
+
+  originGetMenu = this.cdkMenuTrigger()?.getMenu;
 
   opened = output<void>();
   closed = output<void>();
@@ -39,6 +45,22 @@ export class DropdownMenuComponent {
         });
       }
     });
+
+    effect(() => {
+      const trigger = this.cdkMenuTrigger();
+      const host = this.hostElement();
+
+      if (trigger && host) {
+        convert<{ _elementRef: { nativeElement: HTMLElement } }>(trigger)._elementRef = {
+          nativeElement: host,
+        };
+      }
+    });
+  }
+
+  open() {
+    console.log('Opening menu');
+    this.cdkMenuTrigger()?.open();
   }
 
   onOpen(): void {

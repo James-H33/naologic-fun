@@ -1,11 +1,12 @@
 /* eslint-disable @angular-eslint/no-input-rename */
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
 import {
   Directive,
   ElementRef,
   HostListener,
   inject,
   input,
-  Renderer2,
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
@@ -14,54 +15,57 @@ import {
   selector: '[nlTooltip]',
 })
 export class TooltipDirective {
-  tooltipText = input<string>('', { alias: 'nlTooltipText' });
   tooltipTemplate = input<TemplateRef<unknown> | null>(null, { alias: 'nlTooltipTemplate' });
+  delay = input<number>(300, { alias: 'nlTooltipDelay' });
 
   private el = inject(ElementRef);
   private vcr = inject(ViewContainerRef);
-  private renderer = inject(Renderer2);
-  private tooltipElement: HTMLElement | null = null;
 
-  @HostListener('mouseenter') onMouseEnter() {
-    if (!this.tooltipText) return;
+  private overlay = inject(Overlay);
+  private overlayRef: OverlayRef | null = null;
+
+  @HostListener('mouseenter') onMouseEnter(): void {
     this.createTooltip();
   }
 
-  @HostListener('mouseleave') onMouseLeave() {
+  @HostListener('mouseleave') onMouseLeave(): void {
     this.destroyTooltip();
   }
 
-  private createTooltip() {
-    this.tooltipElement = this.renderer.createElement('span');
-    this.renderer.addClass(this.tooltipElement, 'nl-tooltip');
+  private createTooltip(): void {
+    const strategy = this.overlay
+      .position()
+      .flexibleConnectedTo(this.el)
+      .withPositions([
+        {
+          originX: 'center',
+          originY: 'top',
+          overlayX: 'center',
+          overlayY: 'bottom',
+          offsetY: -8, // Gap between element and overlay
+        },
+      ]);
 
-    if (this.tooltipTemplate()) {
-      const viewRef = this.vcr.createEmbeddedView(this.tooltipTemplate() as TemplateRef<unknown>);
+    this.overlayRef = this.overlay.create({
+      positionStrategy: strategy,
+      scrollStrategy: this.overlay.scrollStrategies.reposition(),
+    });
 
-      this.tooltipElement = this.renderer.createElement('span');
-      this.renderer.addClass(this.tooltipElement, 'nl-tooltip');
+    const portal = new TemplatePortal(this.tooltipTemplate()!, this.vcr);
 
-      viewRef.rootNodes.forEach((node) => {
-        console.log('Node:', node);
-        this.renderer.appendChild(this.tooltipElement, node);
-      });
+    this.overlayRef.overlayElement.classList.add('nl-tooltip');
+    this.overlayRef.overlayElement.style.setProperty(
+      '--nl-tooltip-animation-delay',
+      `${this.delay()}ms`,
+    );
 
-      this.renderer.appendChild(this.el.nativeElement, this.tooltipElement);
-    } else {
-      const text = this.renderer.createText(this.tooltipText());
-      this.renderer.appendChild(this.tooltipElement, text);
-    }
+    this.overlayRef.attach(portal);
   }
 
-  private destroyTooltip() {
-    if (this.tooltipElement) {
-      this.renderer.removeChild(this.el.nativeElement, this.tooltipElement);
-      this.tooltipElement = null;
-    }
-
+  private destroyTooltip(): void {
     if (this.tooltipTemplate()) {
-      this.vcr.clear();
-      this.vcr.detach();
+      this.overlayRef?.detach();
+      this.overlayRef = null;
     }
   }
 }

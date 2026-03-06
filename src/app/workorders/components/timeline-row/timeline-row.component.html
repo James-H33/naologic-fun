@@ -10,7 +10,12 @@
     (mouseenter)="onWorkOrderHover(workOrder)"
     (mouseleave)="onWorkOrderHover(null)"
     nlTooltip
+    [nlTooltipDelay]="600"
     [nlTooltipTemplate]="tooltipTemplate"
+    nlDropdown
+    [nlDropdownTemplate]="dropdownTemplate"
+    nlDropdownTriggerType="contextmenu"
+    (nlDropdownOpened)="activeDropdownWorkorder.set(workOrder)"
   >
     <div class="timeline-item-content">
       <span class="timeline-item-name">
@@ -21,7 +26,7 @@
     </div>
 
     <ng-template #tooltipTemplate>
-      <span>{{ workOrder.data.name }}</span> |
+      <span>{{ workOrder.data.name }}</span> <span class="tooltip-separator">|</span>
 
       <span>
         {{ workOrder.data.startDate | date: 'MMM d' }} -
@@ -30,3 +35,12 @@
     </ng-template>
   </div>
 }
+
+<ng-template #dropdownTemplate>
+  <div class="cdk-overlay-pane-default nl-timeline-context-menu">
+    <nl-dropdown-list
+      [items]="dropdownItems"
+      (selectionChange)="onContextMenuAction($event)"
+    ></nl-dropdown-list>
+  </div>
+</ng-template>

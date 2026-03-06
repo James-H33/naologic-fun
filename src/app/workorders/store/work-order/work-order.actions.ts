@@ -80,3 +80,17 @@ export const createWorkOrderFailure = createAction(
     error: FormError;
   }>(),
 );
+
+export const deleteWorkOrder = createAction(
+  '[Workorders] Delete Work Order',
+  props<{
+    workOrderId: string;
+  }>(),
+);
+
+export const deleteWorkOrderSuccess = createAction(
+  '[Workorders] Delete Work Order Success',
+  props<{
+    workOrders: WorkOrderDocument[];
+  }>(),
+);
