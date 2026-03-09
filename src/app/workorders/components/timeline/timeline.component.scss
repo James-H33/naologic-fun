@@ -1,8 +1,10 @@
 :host {
+  --nl-timeline-cursor-style: default;
+  --border: 1px solid #eee;
+
   display: contents;
   position: relative;
-
-  --border: 1px solid #eee;
+  cursor: var(--nl-timeline-cursor-style, default);
 }
 
 .workorder-grid {
@@ -19,6 +21,7 @@
   border-right: var(--border);
   scrollbar-color: rgba(187, 187, 187, 0.5) rgba(0, 0, 0, 0);
   scrollbar-width: thin;
+  padding-bottom: 10px;
 }
 
 .sidebar-title {

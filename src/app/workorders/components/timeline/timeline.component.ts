@@ -1,3 +1,4 @@
+import { CdkScrollableModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
@@ -6,6 +7,8 @@ import {
   computed,
   effect,
   ElementRef,
+  HostBinding,
+  HostListener,
   inject,
   input,
   output,
@@ -16,7 +19,18 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import moment from 'moment';
-import { filter, map, pairwise, Subject, take, tap } from 'rxjs';
+import {
+  combineLatest,
+  filter,
+  map,
+  of,
+  pairwise,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs';
 import { Timescale, TimescaleConfig, TimescalesConfig } from '../../../common/types/timescales';
 import { TimelineService } from '../../services/timeline.service';
 import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
@@ -26,7 +40,7 @@ import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TimelineRowComponent],
+  imports: [CommonModule, TimelineRowComponent, CdkScrollableModule],
   providers: [TimelineService],
 })
 export class TimelineComponent implements AfterViewInit {
@@ -56,6 +70,51 @@ export class TimelineComponent implements AfterViewInit {
   timelineService = inject(TimelineService);
 
   timelineInit$ = toObservable(this.timelineService.initialized$);
+
+  mouseMoveEvent$ = new Subject<MouseEvent | null>();
+  mouseLeaveEvent$ = new Subject<MouseEvent | null>();
+  spaceKeyPressed = signal<boolean>(false);
+  isMouseDown = signal(false);
+  verticalScrollPosition = signal(0);
+  grabbing = computed(() => this.spaceKeyPressed() && this.isMouseDown());
+
+  @HostBinding('style.--nl-timeline-cursor-style')
+  get cursorStyle() {
+    if (this.spaceKeyPressed()) {
+      return this.grabbing() ? 'grabbing' : 'grab';
+    }
+
+    return 'default';
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === ' ' && !this.spaceKeyPressed()) {
+      this.spaceKeyPressed.set(true);
+    }
+  }
+
+  @HostListener('document:keyup', ['$event'])
+  onKeyUp(event: KeyboardEvent) {
+    if (event.key === ' ' && this.spaceKeyPressed()) {
+      this.spaceKeyPressed.set(false);
+    }
+  }
+
+  @HostListener('mousedown')
+  onMouseDown() {
+    this.isMouseDown.set(true);
+  }
+
+  @HostListener('mouseup')
+  onMouseUp() {
+    this.isMouseDown.set(false);
+  }
+
+  @HostListener('mouseleave', ['$event'])
+  onMouseLeave(event: MouseEvent) {
+    this.mouseLeaveEvent$.next(event);
+  }
 
   rowHeight = 48;
   timelineDates = this.timelineService.timelineDates;
@@ -97,7 +156,16 @@ export class TimelineComponent implements AfterViewInit {
       }
     });
 
+    effect(() => {
+      const spaceKeyPressed = this.spaceKeyPressed();
+
+      if (spaceKeyPressed) {
+        this.removeCreateWorkorderPreview();
+      }
+    });
+
     this.listenToMouseMoveInGrid();
+    this.listenForDrag();
   }
 
   ngAfterViewInit(): void {
@@ -107,6 +175,7 @@ export class TimelineComponent implements AfterViewInit {
         take(1),
       )
       .subscribe(() => {
+        // Scroll to today
         this.scrollToDate(moment().toDate());
       });
   }
@@ -158,6 +227,8 @@ export class TimelineComponent implements AfterViewInit {
   }
 
   onMouseMoveInGrid(event: MouseEvent) {
+    this.mouseMoveEvent$.next(event);
+
     if (this.workCenterHovered && !this.workOrderHovered) {
       this.mouseMoveInGrid$.next({ event, rowId: this.workCenterHovered });
     }
@@ -177,10 +248,42 @@ export class TimelineComponent implements AfterViewInit {
     });
   }
 
+  onTimelineScroll(event: Event): void {
+    const scrollTop = (event.target as HTMLElement)?.scrollTop ?? 0;
+    this.verticalScrollPosition.set(scrollTop);
+  }
+
   private scrollToDate(date: Date) {
     setTimeout(() => {
       this.timelineService.scrollToDate(date);
     }, 10 /* Small delay to let ui render before scrolling */);
+  }
+
+  private listenForDrag(): void {
+    const grabbing$ = toObservable(this.grabbing);
+    const mouseMove$ = this.mouseMoveEvent$.pipe(filter((event) => !!event));
+    const mouseLeave$ = this.mouseLeaveEvent$.pipe(filter((event) => !!event));
+
+    grabbing$
+      .pipe(
+        switchMap((grabbing) => {
+          if (grabbing) {
+            const scrollableArea = this.timelineContainer()?.nativeElement;
+
+            return combineLatest([mouseMove$, of(scrollableArea)]).pipe(takeUntil(mouseLeave$));
+          } else {
+            return [];
+          }
+        }),
+        tap(([event, scrollableArea]) => {
+          if (scrollableArea) {
+            scrollableArea.scrollLeft += -event.movementX;
+            scrollableArea.scrollTop += -event.movementY;
+          }
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
   }
 
   private listenToMouseMoveInGrid() {
@@ -203,7 +306,11 @@ export class TimelineComponent implements AfterViewInit {
             curr.event,
           );
 
-          this.showCreateWorkorderPreview(relativeX, relativeY);
+          if (this.spaceKeyPressed()) {
+            this.removeCreateWorkorderPreview();
+          } else {
+            this.showCreateWorkorderPreview(relativeX, relativeY);
+          }
         }),
         takeUntilDestroyed(),
       )
