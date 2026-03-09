@@ -86,6 +86,41 @@ export const fakeWorkCenters: WorkCenterDocument[] = [
       name: 'Adobe Systems Headquarters - California',
     },
   },
+  {
+    docId: 'wc-011',
+    docType: 'workCenter',
+    data: {
+      name: 'Intel Manufacturing - Arizona',
+    },
+  },
+  {
+    docId: 'wc-012',
+    docType: 'workCenter',
+    data: {
+      name: 'Cisco Systems Campus - California',
+    },
+  },
+  {
+    docId: 'wc-013',
+    docType: 'workCenter',
+    data: {
+      name: 'HP Enterprise Facility - Texas',
+    },
+  },
+  {
+    docId: 'wc-014',
+    docType: 'workCenter',
+    data: {
+      name: 'Siemens Energy Plant - Florida',
+    },
+  },
+  {
+    docId: 'wc-015',
+    docType: 'workCenter',
+    data: {
+      name: 'GE Aviation Center - Ohio',
+    },
+  },
 ];
 
 export const fakeWorkOrders: WorkOrderDocument[] = [
@@ -352,6 +387,118 @@ export const fakeWorkOrders: WorkOrderDocument[] = [
       status: 'open',
       startDate: '2026-05-30',
       endDate: '2026-06-05',
+    },
+  },
+
+  // Added workorders for wc-011 to wc-015
+  {
+    docId: 'wo-025',
+    docType: 'workOrder',
+    data: {
+      name: 'Inspect Clean Room',
+      workCenterId: 'wc-011',
+      status: 'open',
+      startDate: '2026-06-10',
+      endDate: '2026-06-12',
+    },
+  },
+  {
+    docId: 'wo-026',
+    docType: 'workOrder',
+    data: {
+      name: 'Replace Circuit Boards',
+      workCenterId: 'wc-011',
+      status: 'in-progress',
+      startDate: '2026-06-13',
+      endDate: '2026-06-18',
+    },
+  },
+  {
+    docId: 'wo-027',
+    docType: 'workOrder',
+    data: {
+      name: 'Test Network Redundancy',
+      workCenterId: 'wc-012',
+      status: 'open',
+      startDate: '2026-06-15',
+      endDate: '2026-06-20',
+    },
+  },
+  {
+    docId: 'wo-028',
+    docType: 'workOrder',
+    data: {
+      name: 'Upgrade Firewall',
+      workCenterId: 'wc-012',
+      status: 'complete',
+      startDate: '2026-06-21',
+      endDate: '2026-06-23',
+    },
+  },
+  {
+    docId: 'wo-029',
+    docType: 'workOrder',
+    data: {
+      name: 'Replace Server Drives',
+      workCenterId: 'wc-013',
+      status: 'open',
+      startDate: '2026-06-25',
+      endDate: '2026-06-28',
+    },
+  },
+  {
+    docId: 'wo-030',
+    docType: 'workOrder',
+    data: {
+      name: 'Test Backup Procedures',
+      workCenterId: 'wc-013',
+      status: 'in-progress',
+      startDate: '2026-06-29',
+      endDate: '2026-07-02',
+    },
+  },
+  {
+    docId: 'wo-031',
+    docType: 'workOrder',
+    data: {
+      name: 'Inspect Turbine Blades',
+      workCenterId: 'wc-014',
+      status: 'open',
+      startDate: '2026-07-03',
+      endDate: '2026-07-06',
+    },
+  },
+  {
+    docId: 'wo-032',
+    docType: 'workOrder',
+    data: {
+      name: 'Replace Control Panel',
+      workCenterId: 'wc-014',
+      status: 'complete',
+      startDate: '2026-07-07',
+      endDate: '2026-07-10',
+    },
+  },
+  {
+    docId: 'wo-033',
+    docType: 'workOrder',
+    data: {
+      name: 'Test Engine Sensors',
+      workCenterId: 'wc-015',
+      status: 'open',
+      startDate: '2026-07-11',
+      endDate: '2026-07-14',
+    },
+  },
+  {
+    docId: 'wo-034',
+    docType: 'workOrder',
+    data: {
+      name: 'Inspect Fuel Lines',
+      workCenterId: 'wc-015',
+      status: 'in-progress',
+      startDate: '2026-07-15',
+      endDate: '2026-07-18',
     },
   },
 ];

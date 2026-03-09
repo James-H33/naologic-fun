@@ -1,5 +1,9 @@
 <div class="workorder-grid">
-  <section class="sidebar">
+  <section
+    class="sidebar"
+    [scrollTop]="verticalScrollPosition()"
+    (scroll)="onTimelineScroll($event)"
+  >
     <div class="grid-header">
       <div class="grid-header-row">
         <div class="sidebar-title">Work Center</div>
@@ -13,7 +17,12 @@
     </div>
   </section>
 
-  <section class="timeline" #timelineContainer>
+  <section
+    class="timeline"
+    #timelineContainer
+    [scrollTop]="verticalScrollPosition()"
+    (scroll)="onTimelineScroll($event)"
+  >
     <div class="grid">
       <div class="grid-header">
         <div class="grid-header-row timescales">

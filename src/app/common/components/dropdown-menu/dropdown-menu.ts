@@ -59,7 +59,6 @@ export class DropdownMenuComponent {
   }
 
   open() {
-    console.log('Opening menu');
     this.cdkMenuTrigger()?.open();
   }
 
