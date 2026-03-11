@@ -128,8 +128,6 @@ export class TimelineComponent implements AfterViewInit {
     return config.colWidth / this.getScaleDivider(config.scale);
   });
 
-  mouseMoveInGrid$ = new Subject<{ event: MouseEvent; rowId: string }>();
-
   previewCardStyles = signal<{ top: number; left: number; display: string }>({
     top: 0,
     left: 0,
@@ -180,11 +178,11 @@ export class TimelineComponent implements AfterViewInit {
       });
   }
 
-  onRowHover(workcenterId: string) {
+  onRowHover(workcenterId: string): void {
     this.workCenterHovered = workcenterId;
   }
 
-  onWorkOrderHover(workOrder: WorkOrderDocument | null) {
+  onWorkOrderHover(workOrder: WorkOrderDocument | null): void {
     this.workOrderHovered = workOrder;
 
     if (workOrder) {
@@ -192,7 +190,7 @@ export class TimelineComponent implements AfterViewInit {
     }
   }
 
-  showCreateWorkorderPreview(relativeX: number, relativeY: number) {
+  showCreateWorkorderPreview(relativeX: number, relativeY: number): void {
     const config = this.timescaleConfig();
     const previewCardWidth = this.previewCardWidth();
 
@@ -222,24 +220,20 @@ export class TimelineComponent implements AfterViewInit {
     }
   }
 
-  removeCreateWorkorderPreview() {
+  removeCreateWorkorderPreview(): void {
     this.previewCardStyles.set({ left: 0, top: 0, display: 'none' });
   }
 
-  onMouseMoveInGrid(event: MouseEvent) {
+  onMouseMoveInGrid(event: MouseEvent): void {
     this.mouseMoveEvent$.next(event);
-
-    if (this.workCenterHovered && !this.workOrderHovered) {
-      this.mouseMoveInGrid$.next({ event, rowId: this.workCenterHovered });
-    }
   }
 
-  onMouseLeaveGrid() {
+  onMouseLeaveGrid(): void {
     this.workCenterHovered = null;
     this.removeCreateWorkorderPreview();
   }
 
-  onCreateWorkorder(event: MouseEvent) {
+  onCreateWorkorder(event: MouseEvent): void {
     const date = this.timelineService.getDateBasedOnClickPosition(event);
 
     this.createWorkOrder.emit({
@@ -253,7 +247,7 @@ export class TimelineComponent implements AfterViewInit {
     this.verticalScrollPosition.set(scrollTop);
   }
 
-  private scrollToDate(date: Date) {
+  private scrollToDate(date: Date): void {
     setTimeout(() => {
       this.timelineService.scrollToDate(date);
     }, 10 /* Small delay to let ui render before scrolling */);
@@ -286,14 +280,15 @@ export class TimelineComponent implements AfterViewInit {
       .subscribe();
   }
 
-  private listenToMouseMoveInGrid() {
-    this.mouseMoveInGrid$
+  private listenToMouseMoveInGrid(): void {
+    this.mouseMoveEvent$
       .pipe(
-        map(({ event, rowId }) => {
+        filter((event) => !!event),
+        map((event) => {
           return {
             event,
-            date: this.timelineService.getDateBasedOnClickPosition(event),
-            rowId,
+            date: this.timelineService.getDateBasedOnClickPosition(event as MouseEvent),
+            rowId: this.workCenterHovered,
           };
         }),
         pairwise(),

@@ -6,9 +6,13 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap/datepicker';
   standalone: true,
 })
 export class DateToDateStructPipe implements PipeTransform {
-  transform(value: Date | null): NgbDateStruct | null {
+  transform(value: Date | string | null): NgbDateStruct | null {
     if (!value) {
       return null;
+    }
+
+    if (typeof value === 'string') {
+      value = new Date(value);
     }
 
     return {

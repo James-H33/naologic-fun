@@ -1,0 +1,99 @@
+<div class="header">
+  <div class="header-content">
+    <h2 class="header-content__title">Work Order Details</h2>
+    <!-- <p class="header-content__description">Fill in the details below to create a new work order.</p> -->
+  </div>
+
+  <div class="header-actions">
+    <button nlButton nlButtonVariant="outline" (click)="cancel()">Cancel</button>
+    <button nlButton nlButtonVariant="primary" [disabled]="form().invalid()" (click)="update()">
+      Update
+    </button>
+  </div>
+</div>
+
+<div class="form">
+  <div class="form-row">
+    <label for="company">Work Order Name</label>
+
+    <input
+      nlInput
+      id="company"
+      type="text"
+      [formField]="form.name"
+      placeholder="Server Replacement, etc..."
+    />
+  </div>
+
+  <div class="form-row">
+    <label for="status">Status</label>
+
+    <nl-status-picker
+      [status]="form().value().status"
+      [hostElement]="statusTrigger"
+      (statusChanged)="onStatusChanged($event)"
+    >
+      <button class="nl-status-picker-trigger" #statusTrigger>
+        <nl-status [status]="form().value().status"></nl-status>
+      </button>
+    </nl-status-picker>
+  </div>
+
+  <div class="form-row">
+    <label for="start-date">Start Date</label>
+
+    <input
+      nlInput
+      id="start-date"
+      type="text"
+      placeholder="yyyy-mm-dd"
+      [ngModel]="form().value().startDate | dateToDateStruct"
+      (ngModelChange)="onStartDateChanged($event)"
+      [class.error]="workOrderError()?.fields?.['startDate']"
+      name="startDate"
+      [displayMonths]="displayMonths"
+      [navigation]="navigation"
+      [outsideDays]="outsideDays"
+      [showWeekNumbers]="showWeekNumbers"
+      ngbDatepicker
+      #startDatePicker="ngbDatepicker"
+      (click)="openDatePicker(startDatePicker)"
+    />
+
+    @if (workOrderError()?.fields?.['startDate']) {
+      <span class="nl-form-row__error-message">{{ workOrderError()?.fields?.['startDate'] }}</span>
+    }
+  </div>
+
+  <div class="form-row">
+    <label for="end-date">End Date</label>
+
+    <input
+      nlInput
+      id="end-date"
+      type="text"
+      placeholder="yyyy-mm-dd"
+      [ngModel]="form().value().endDate | dateToDateStruct"
+      (ngModelChange)="onEndDateChanged($event)"
+      [class.error]="workOrderError()?.fields?.['endDate']"
+      name="endDate"
+      [displayMonths]="displayMonths"
+      [navigation]="navigation"
+      [outsideDays]="outsideDays"
+      [showWeekNumbers]="showWeekNumbers"
+      ngbDatepicker
+      #endDatePicker="ngbDatepicker"
+      (click)="openDatePicker(endDatePicker)"
+    />
+
+    @if (workOrderError()?.fields?.['endDate']) {
+      <span class="nl-form-row__error-message">{{ workOrderError()?.fields?.['endDate'] }}</span>
+    }
+  </div>
+
+  @if (workOrderError()) {
+    <div class="nl-form-row form-row--error">
+      <span class="nl-form-row__error-message">{{ workOrderError()?.message }}</span>
+    </div>
+  }
+</div>

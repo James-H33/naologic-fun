@@ -60,6 +60,13 @@ export const openCreateWorkOrderForm = createAction(
   }>(),
 );
 
+export const openEditWorkOrderForm = createAction(
+  '[Workorders] Open Edit Work Order Form',
+  props<{
+    workOrderId: string | null;
+  }>(),
+);
+
 export const createWorkOrder = createAction(
   '[Workorders] Create Work Order',
   props<{
@@ -78,6 +85,27 @@ export const createWorkOrderFailure = createAction(
   '[Workorders] Create Work Order Failure',
   props<{
     error: FormError;
+  }>(),
+);
+
+export const editWorkOrderFailure = createAction(
+  '[Workorders] Edit Work Order Failure',
+  props<{
+    error: FormError;
+  }>(),
+);
+
+export const editWorkOrder = createAction(
+  '[Workorders] Edit Work Order',
+  props<{
+    workOrder: WorkOrderDocument;
+  }>(),
+);
+
+export const editWorkOrderSuccess = createAction(
+  '[Workorders] Edit Work Order Success',
+  props<{
+    workOrders: WorkOrderDocument[];
   }>(),
 );
 
