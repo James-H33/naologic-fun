@@ -6,9 +6,12 @@ import {
   createWorkOrderFailure,
   createWorkOrderSuccess,
   deleteWorkOrderSuccess,
+  editWorkOrderFailure,
+  editWorkOrderSuccess,
   loadTimeScaleConfigSuccess,
   loadWorkOrdersSuccess,
   openCreateWorkOrderForm,
+  openEditWorkOrderForm,
   setTimescaleConfig,
   setWorkOrderFormOpenState,
 } from './work-order.actions';
@@ -19,18 +22,22 @@ interface WorkOrderState {
   workOrders: WorkOrderDocument[];
   workCenters: WorkCenterDocument[];
   timescaleConfig: TimescaleConfig;
-  isWorkOrderFormOpen: boolean;
+  isCreateWorkOrderFormOpen: boolean;
   newWorkOrder: NewWorkOrder | null;
   newWorkOrderError: FormError | null;
+  editWorkOrderError: FormError | null;
+  editingWorkOrderId: string | null;
 }
 
 export const initialWorkOrderState: WorkOrderState = {
   workOrders: [],
   workCenters: [],
   timescaleConfig: TimescalesConfig[Timescale.Week],
-  isWorkOrderFormOpen: false,
+  isCreateWorkOrderFormOpen: false,
   newWorkOrder: null,
   newWorkOrderError: null,
+  editWorkOrderError: null,
+  editingWorkOrderId: null,
 };
 
 export const workOrderFeature = createFeature({
@@ -63,14 +70,14 @@ export const workOrderFeature = createFeature({
     on(setWorkOrderFormOpenState, (state, { open }) => {
       return {
         ...state,
-        isWorkOrderFormOpen: open,
+        isCreateWorkOrderFormOpen: open,
       };
     }),
 
     on(openCreateWorkOrderForm, (state, { date, workCenterId }) => {
       return {
         ...state,
-        isWorkOrderFormOpen: true,
+        isCreateWorkOrderFormOpen: true,
         newWorkOrder: {
           title: '',
           startDate: date,
@@ -86,9 +93,18 @@ export const workOrderFeature = createFeature({
       return {
         ...state,
         workOrders: workOrders,
-        isWorkOrderFormOpen: false,
+        isCreateWorkOrderFormOpen: false,
         newWorkOrder: null,
         newWorkOrderError: null,
+      };
+    }),
+
+    on(editWorkOrderSuccess, (state, { workOrders }) => {
+      return {
+        ...state,
+        workOrders: workOrders,
+        editingWorkOrderId: null,
+        editWorkOrderError: null,
       };
     }),
 
@@ -99,10 +115,25 @@ export const workOrderFeature = createFeature({
       };
     }),
 
+    on(editWorkOrderFailure, (state, { error }) => {
+      return {
+        ...state,
+        editWorkOrderError: error,
+      };
+    }),
+
     on(deleteWorkOrderSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders: workOrders,
+      };
+    }),
+
+    on(openEditWorkOrderForm, (state, { workOrderId }) => {
+      return {
+        ...state,
+        editingWorkOrderId: workOrderId,
+        editWorkOrderError: null,
       };
     }),
   ),

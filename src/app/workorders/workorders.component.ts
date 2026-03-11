@@ -10,20 +10,26 @@ import { TimelineComponent } from './components/timeline/timeline.component';
 import {
   createWorkOrder,
   deleteWorkOrder,
+  editWorkOrder,
   loadTimeScaleConfigStart,
   loadWorkOrdersStart,
   openCreateWorkOrderForm,
+  openEditWorkOrderForm,
   setTimescaleConfig,
   setWorkOrderFormOpenState,
 } from './store/work-order/work-order.actions';
 import {
-  selectIsWorkOrderFormOpen,
+  selectEditingWorkOrder,
+  selectIsCreateWorkOrderFormOpen,
+  selectIsEditWorkOrderFormOpen,
   selectNewWorkOrder,
   selectNewWorkOrderError,
   selectTimescaleConfig,
   selectWorkOrdersGroupedByWorkCenter,
 } from './store/work-order/work-order.selectors';
 import { NewWorkOrder } from '@common/types/new-work-order.interface';
+import { EditWorkOrderComponent } from './components/edit-work-order/edit-work-order.component';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 
 @Component({
   selector: 'nl-workorders',
@@ -37,6 +43,7 @@ import { NewWorkOrder } from '@common/types/new-work-order.interface';
     DropdownListComponent,
     IconComponent,
     CreateWorkOrderComponent,
+    EditWorkOrderComponent,
   ],
 })
 export class WorkordersComponent implements OnInit {
@@ -48,11 +55,15 @@ export class WorkordersComponent implements OnInit {
 
   workOrdersGroupedByWorkCenter = this.store.selectSignal(selectWorkOrdersGroupedByWorkCenter);
 
-  isWorkOrderFormOpen = this.store.selectSignal(selectIsWorkOrderFormOpen);
+  isCreateWorkOrderFormOpen = this.store.selectSignal(selectIsCreateWorkOrderFormOpen);
+
+  isEditWorkOrderFormOpen = this.store.selectSignal(selectIsEditWorkOrderFormOpen);
 
   timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
 
   newWorkOrder = this.store.selectSignal(selectNewWorkOrder);
+
+  editingWorkOrder = this.store.selectSignal(selectEditingWorkOrder);
 
   newWorkOrderError = this.store.selectSignal(selectNewWorkOrderError);
 
@@ -97,8 +108,20 @@ export class WorkordersComponent implements OnInit {
     );
   }
 
-  onEditWorkOrder(workOrderId: string) {
-    console.log('Edit work order with ID:', workOrderId);
+  onOpenEditWorkOrderForm(workOrderId: string | null) {
+    this.store.dispatch(
+      openEditWorkOrderForm({
+        workOrderId,
+      }),
+    );
+  }
+
+  onEditWorkOrder(update: { workOrder: WorkOrderDocument }) {
+    this.store.dispatch(
+      editWorkOrder({
+        workOrder: update.workOrder,
+      }),
+    );
   }
 
   onWorkOrderCreated(event: { workOrder: NewWorkOrder }) {
@@ -110,7 +133,7 @@ export class WorkordersComponent implements OnInit {
   }
 
   onShowCreateWorkOrderForm(open: boolean) {
-    const isOpen = this.isWorkOrderFormOpen();
+    const isOpen = this.isCreateWorkOrderFormOpen();
 
     if (isOpen === open) {
       this.store.dispatch(setWorkOrderFormOpenState({ open: false }));

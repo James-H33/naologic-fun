@@ -42,7 +42,7 @@
       [timescaleConfig]="timescaleConfig()"
       (createWorkOrder)="onCreateWorkOrder($event)"
       (deleteWorkOrder)="onDeleteWorkOrder($event)"
-      (editWorkOrder)="onEditWorkOrder($event)"
+      (editWorkOrder)="onOpenEditWorkOrderForm($event)"
     >
     </nl-timeline>
   </div>
@@ -50,11 +50,22 @@
 
 @defer (on timer(500)) {
   <nl-create-work-order
-    [open]="isWorkOrderFormOpen()"
+    [open]="isCreateWorkOrderFormOpen()"
     [workOrder]="newWorkOrder()"
     [workOrderError]="newWorkOrderError()"
     (canceled)="onShowCreateWorkOrderForm(false)"
     (created)="onWorkOrderCreated($event)"
   >
   </nl-create-work-order>
+}
+
+@defer (on timer(500)) {
+  <nl-edit-work-order
+    [open]="isEditWorkOrderFormOpen()"
+    [workOrder]="editingWorkOrder()"
+    [workOrderError]="newWorkOrderError()"
+    (canceled)="onOpenEditWorkOrderForm(null)"
+    (updated)="onEditWorkOrder($event)"
+  >
+  </nl-edit-work-order>
 }

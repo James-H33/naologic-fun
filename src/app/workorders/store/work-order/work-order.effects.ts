@@ -20,6 +20,9 @@ import {
   createWorkOrderSuccess,
   deleteWorkOrder,
   deleteWorkOrderSuccess,
+  editWorkOrder,
+  editWorkOrderFailure,
+  editWorkOrderSuccess,
   loadTimeScaleConfigStart,
   loadTimeScaleConfigSuccess,
   loadWorkOrdersStart,
@@ -160,6 +163,75 @@ export const createWorkOrder$ = createEffect(
             const updatedWorkOrders = [...workOrders, newWorkOrder];
 
             return createWorkOrderSuccess({ workOrders: updatedWorkOrders });
+          }),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const editWorkOrder$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(editWorkOrder),
+      concatLatestFrom(() => [
+        store.select(selectWorkOrders),
+        store.select(selectWorkOrdersGroupedByWorkCenter),
+      ]),
+      switchMap(([action, workOrders, workOrdersGroupedByWorkCenter]) => {
+        const { workOrder } = action;
+        const { docId, data } = workOrder;
+        const workOrdersForWorkCenter =
+          workOrdersGroupedByWorkCenter[data.workCenterId as string] ?? [];
+
+        const startDate = moment(data.startDate);
+        const endDate = moment(data.endDate);
+
+        for (const wo of workOrdersForWorkCenter) {
+          if (wo.docId === docId) {
+            continue;
+          }
+
+          const start = moment(wo.data.startDate);
+          const end = moment(wo.data.endDate);
+
+          const overlaps =
+            startDate.isBetween(start, end, undefined, '[]') ||
+            endDate.isBetween(start, end, undefined, '[]') ||
+            start.isBetween(startDate, endDate, undefined, '[]') ||
+            end.isBetween(startDate, endDate, undefined, '[]');
+
+          if (overlaps) {
+            return [
+              editWorkOrderFailure({
+                error: {
+                  message:
+                    'Work order dates overlap with existing work order for the same work center.',
+                  fields: {
+                    startDate: 'Start date overlaps with existing work order.',
+                    endDate: 'End date overlaps with existing work order.',
+                  },
+                },
+              }),
+            ];
+          }
+        }
+
+        const updatedWorkOrder: WorkOrderDocument = {
+          ...workOrder,
+          data: {
+            ...data,
+          },
+        };
+
+        return timer(200).pipe(
+          map(() => {
+            const updatedWorkOrders = workOrders.map((wo) =>
+              wo.docId === docId ? updatedWorkOrder : wo,
+            );
+
+            return editWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),

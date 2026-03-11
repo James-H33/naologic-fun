@@ -7,15 +7,16 @@ import {
   input,
   output,
   signal,
+  viewChildren,
 } from '@angular/core';
+import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
 import { StatusComponent } from '@common/components/status/status.component';
 import { DropdownDirective } from '@common/directives/dropdown/dropdown.directive';
 import { TooltipModule } from '@common/directives/tooltip/tooltip.module';
+import { DropdownListItem } from '@common/types/dropdown-list-item.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { WorkOrderStatusColors } from '@common/types/work-order-status-colors';
 import { TimelineService } from '../../services/timeline.service';
-import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
-import { DropdownListItem } from '@common/types/dropdown-list-item.interface';
 
 @Component({
   selector: 'nl-timeline-row',
@@ -30,6 +31,7 @@ export class TimelineRowComponent {
   rowHeight = input(48);
   rowIndex = input(0);
 
+  dropdownRef = viewChildren(DropdownDirective);
   activeDropdownWorkorder = signal<WorkOrderDocument | null>(null);
   workOrderHovered = output<WorkOrderDocument | null>();
   deleteWorkOrder = output<string>();
@@ -71,6 +73,10 @@ export class TimelineRowComponent {
 
     if (!activeWorkOrder) {
       return;
+    }
+
+    for (const dropdown of this.dropdownRef()) {
+      dropdown.close();
     }
 
     if (item.id === 'edit') {

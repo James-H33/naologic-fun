@@ -7,9 +7,10 @@ export const {
   selectWorkOrders,
   selectWorkCenters,
   selectTimescaleConfig,
-  selectIsWorkOrderFormOpen,
+  selectIsCreateWorkOrderFormOpen,
   selectNewWorkOrder,
   selectNewWorkOrderError,
+  selectEditingWorkOrderId,
 } = workOrderFeature;
 
 export const selectWorkOrdersGroupedByWorkCenter = createSelector(
@@ -41,4 +42,21 @@ export const selectWorkOrdersGroupedByWorkCenter = createSelector(
 
     return groupedWorkOrders;
   },
+);
+
+export const selectEditingWorkOrder = createSelector(
+  selectWorkOrders,
+  selectEditingWorkOrderId,
+  (workOrders, editingWorkOrderId) => {
+    if (!editingWorkOrderId) {
+      return null;
+    }
+
+    return workOrders.find((wo) => wo.docId === editingWorkOrderId) || null;
+  },
+);
+
+export const selectIsEditWorkOrderFormOpen = createSelector(
+  selectEditingWorkOrderId,
+  (editingWorkOrderId) => !!editingWorkOrderId,
 );
