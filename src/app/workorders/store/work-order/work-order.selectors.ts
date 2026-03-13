@@ -4,6 +4,7 @@ import { WorkCenterDocument } from '@common/types/work-center-documnet.interface
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 
 export const {
+  selectViewId,
   selectWorkOrders,
   selectWorkCenters,
   selectTimescaleConfig,

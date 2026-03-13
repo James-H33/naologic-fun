@@ -13,7 +13,7 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { Store } from '@ngrx/store';
 import moment from 'moment';
 import { timer } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import {
   createWorkOrder,
   createWorkOrderFailure,
@@ -30,7 +30,12 @@ import {
   setTimescaleConfig,
   setTimescaleConfigSuccess,
 } from './work-order.actions';
-import { selectWorkOrders, selectWorkOrdersGroupedByWorkCenter } from './work-order.selectors';
+import {
+  selectViewId,
+  selectWorkCenters,
+  selectWorkOrders,
+  selectWorkOrdersGroupedByWorkCenter,
+} from './work-order.selectors';
 
 export const loadWorkorders$ = createEffect(
   (actions$ = inject(Actions)) => {
@@ -259,4 +264,22 @@ export const deleteWorkOrder$ = createEffect(
     );
   },
   { functional: true },
+);
+
+export const saveWorkOrdersToStorage$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(createWorkOrderSuccess, editWorkOrderSuccess, deleteWorkOrderSuccess),
+      concatLatestFrom(() => [
+        store.select(selectWorkOrders),
+        store.select(selectWorkCenters),
+        store.select(selectViewId),
+      ]),
+      tap(([, workOrders, workCenters, viewId]) => {
+        setDataInStorageByKey(`workorders_view_${viewId}`, workOrders);
+        setDataInStorageByKey(`workcenters_view_${viewId}`, workCenters);
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
 );
