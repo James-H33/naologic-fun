@@ -9,6 +9,7 @@ import {
   editWorkOrderFailure,
   editWorkOrderSuccess,
   loadTimeScaleConfigSuccess,
+  loadWorkOrdersStart,
   loadWorkOrdersSuccess,
   openCreateWorkOrderForm,
   openEditWorkOrderForm,
@@ -19,6 +20,7 @@ import { NewWorkOrder } from '@common/types/new-work-order.interface';
 import { FormError } from '@common/types/form-error.interface';
 
 interface WorkOrderState {
+  viewId: string | null;
   workOrders: WorkOrderDocument[];
   workCenters: WorkCenterDocument[];
   timescaleConfig: TimescaleConfig;
@@ -30,6 +32,7 @@ interface WorkOrderState {
 }
 
 export const initialWorkOrderState: WorkOrderState = {
+  viewId: null,
   workOrders: [],
   workCenters: [],
   timescaleConfig: TimescalesConfig[Timescale.Week],
@@ -44,6 +47,15 @@ export const workOrderFeature = createFeature({
   name: 'workorder',
   reducer: createReducer<WorkOrderState>(
     initialWorkOrderState,
+
+    on(loadWorkOrdersStart, (state, { viewId }) => {
+      return {
+        ...state,
+        workOrders: [],
+        workCenters: [],
+        viewId,
+      };
+    }),
 
     on(loadWorkOrdersSuccess, (state, { workOrders, workCenters }) => {
       return {

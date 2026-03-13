@@ -1,9 +1,17 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
 import moment from 'moment';
+import { Subject } from 'rxjs/internal/Subject';
 
 @Injectable()
 export class TimelineService {
+  mouseMove$ = new Subject<MouseEvent>();
+  mouseLeave$ = new Subject<MouseEvent>();
+  mouseDown$ = new Subject<MouseEvent>();
+  mouseUp$ = new Subject<MouseEvent>();
+  keydown$ = new Subject<KeyboardEvent>();
+  keyup$ = new Subject<KeyboardEvent>();
+
   initialized$ = signal(false);
   timelineContainer = signal<HTMLElement>(null!);
   timelineBody = signal<HTMLElement>(null!);
@@ -44,7 +52,7 @@ export class TimelineService {
     return { relativeX, relativeY };
   }
 
-  getPositionOfDate(date: Date): number {
+  getColumnStartPositionOfDate(date: Date): number {
     const scale = this.config()?.scale;
     const dates = this.timelineDates();
     const timelineStartDate = moment(dates[0].date);
@@ -64,8 +72,20 @@ export class TimelineService {
     return daysFromTimelineStart * (this.config()?.colWidth ?? 0);
   }
 
+  getPositionOfDate(date: Date): number {
+    const scale = this.config()?.scale;
+    const dates = this.timelineDates();
+    const timelineStartDate = moment(dates[0].date);
+    const targetDate = moment(date);
+
+    const widthOfDay = this.getWidthOfDayBasedOnScale(scale);
+    const daysFromTimelineStart = targetDate.diff(timelineStartDate, 'days');
+
+    return daysFromTimelineStart * widthOfDay;
+  }
+
   scrollToDate(date: Date) {
-    const position = this.getPositionOfDate(date);
+    const position = this.getColumnStartPositionOfDate(date);
     const element = this.timelineContainer();
 
     if (element) {
@@ -77,9 +97,9 @@ export class TimelineService {
     const { relativeX } = this.getRelativePositionFromEvent(event);
     const colWidth = this.config()?.colWidth;
     const scale = this.config()?.scale;
-    const dateIndex = Math.floor(relativeX / colWidth);
+    const colIndex = Math.floor(relativeX / colWidth);
 
-    const day = this.getFormulaForDateByClickPosition(scale, dateIndex, relativeX);
+    const day = this.getFormulaForDateByClickPosition(scale, colIndex, relativeX);
 
     return day;
   }
@@ -109,29 +129,29 @@ export class TimelineService {
 
   private getFormulaForDateByClickPosition(
     scale: Timescale,
-    dateIndex: number,
+    colIndex: number,
     relativeX: number,
   ): Date {
     const dates = this.timelineDates();
-    const date = dates[dateIndex];
+    const col = dates[colIndex];
     const colWidth = this.config()?.colWidth ?? 0;
 
     if (scale === Timescale.Month) {
-      const daysInMonth = moment(date.date).daysInMonth();
+      const daysInMonth = moment(col.date).daysInMonth();
       const day = Math.ceil((relativeX % colWidth) / (colWidth / daysInMonth));
 
-      return moment(date.date).date(day).toDate();
+      return moment(col.date).date(day).toDate();
     }
 
     if (scale === Timescale.Week) {
       const day = Math.ceil((relativeX % colWidth) / (colWidth / 7));
 
-      return moment(date.date)
+      return moment(col.date)
         .add(day - 1, 'day')
         .toDate();
     }
 
-    return date.date;
+    return col.date;
   }
 
   private getWidthOfDayBasedOnScale(scale: Timescale): number {

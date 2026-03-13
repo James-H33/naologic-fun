@@ -15,7 +15,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import moment from 'moment';
@@ -23,9 +23,9 @@ import {
   combineLatest,
   filter,
   map,
+  merge,
   of,
   pairwise,
-  Subject,
   switchMap,
   take,
   takeUntil,
@@ -71,17 +71,39 @@ export class TimelineComponent implements AfterViewInit {
 
   timelineInit$ = toObservable(this.timelineService.initialized$);
 
-  mouseMoveEvent$ = new Subject<MouseEvent | null>();
-  mouseLeaveEvent$ = new Subject<MouseEvent | null>();
-  spaceKeyPressed = signal<boolean>(false);
-  isMouseDown = signal(false);
+  mouseMove$ = this.timelineService.mouseMove$;
+  mouseLeave$ = this.timelineService.mouseLeave$;
+  mouseDown$ = this.timelineService.mouseDown$;
+  mouseUp$ = this.timelineService.mouseUp$;
+  keydown$ = this.timelineService.keydown$;
+  keyup$ = this.timelineService.keyup$;
+  isSpaceKeyPressed$ = merge(
+    this.keydown$.pipe(
+      filter((event) => event.key === ' '),
+      map(() => true),
+    ),
+    this.keyup$.pipe(
+      filter((event) => event.key === ' '),
+      map(() => false),
+    ),
+  ).pipe(takeUntilDestroyed());
+
+  isMouseDown$ = merge(
+    this.mouseDown$.pipe(map(() => true)),
+    this.mouseUp$.pipe(map(() => false)),
+  ).pipe(takeUntilDestroyed());
+
+  isSpaceKeyPressed = toSignal(this.isSpaceKeyPressed$, { initialValue: false });
+  spaceKeyPressed = toSignal(this.isSpaceKeyPressed$, { initialValue: false });
+  isMouseDown = toSignal(this.isMouseDown$, { initialValue: false });
+
   verticalScrollPosition = signal(0);
-  grabbing = computed(() => this.spaceKeyPressed() && this.isMouseDown());
+  isGrabbing = computed(() => this.spaceKeyPressed() && this.isMouseDown());
 
   @HostBinding('style.--nl-timeline-cursor-style')
   get cursorStyle() {
     if (this.spaceKeyPressed()) {
-      return this.grabbing() ? 'grabbing' : 'grab';
+      return this.isGrabbing() ? 'grabbing' : 'grab';
     }
 
     return 'default';
@@ -89,31 +111,27 @@ export class TimelineComponent implements AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if (event.key === ' ' && !this.spaceKeyPressed()) {
-      this.spaceKeyPressed.set(true);
-    }
+    this.timelineService.keydown$.next(event);
   }
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    if (event.key === ' ' && this.spaceKeyPressed()) {
-      this.spaceKeyPressed.set(false);
-    }
+    this.timelineService.keyup$.next(event);
   }
 
-  @HostListener('mousedown')
-  onMouseDown() {
-    this.isMouseDown.set(true);
+  @HostListener('mousedown', ['$event'])
+  onMouseDown(event: MouseEvent) {
+    this.timelineService.mouseDown$.next(event);
   }
 
-  @HostListener('mouseup')
-  onMouseUp() {
-    this.isMouseDown.set(false);
+  @HostListener('mouseup', ['$event'])
+  onMouseUp(event: MouseEvent) {
+    this.timelineService.mouseUp$.next(event);
   }
 
   @HostListener('mouseleave', ['$event'])
   onMouseLeave(event: MouseEvent) {
-    this.mouseLeaveEvent$.next(event);
+    this.timelineService.mouseLeave$.next(event);
   }
 
   rowHeight = 48;
@@ -225,7 +243,7 @@ export class TimelineComponent implements AfterViewInit {
   }
 
   onMouseMoveInGrid(event: MouseEvent): void {
-    this.mouseMoveEvent$.next(event);
+    this.timelineService.mouseMove$.next(event);
   }
 
   onMouseLeaveGrid(): void {
@@ -254,9 +272,9 @@ export class TimelineComponent implements AfterViewInit {
   }
 
   private listenForDrag(): void {
-    const grabbing$ = toObservable(this.grabbing);
-    const mouseMove$ = this.mouseMoveEvent$.pipe(filter((event) => !!event));
-    const mouseLeave$ = this.mouseLeaveEvent$.pipe(filter((event) => !!event));
+    const grabbing$ = toObservable(this.isGrabbing);
+    const mouseMove$ = this.mouseMove$.pipe(filter((event) => !!event));
+    const mouseLeave$ = this.mouseLeave$.pipe(filter((event) => !!event));
 
     grabbing$
       .pipe(
@@ -281,7 +299,7 @@ export class TimelineComponent implements AfterViewInit {
   }
 
   private listenToMouseMoveInGrid(): void {
-    this.mouseMoveEvent$
+    this.mouseMove$
       .pipe(
         filter((event) => !!event),
         map((event) => {

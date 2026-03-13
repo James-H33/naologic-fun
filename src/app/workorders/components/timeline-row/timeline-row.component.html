@@ -1,12 +1,13 @@
-@for (workOrder of workOrdersWithPostion(); track workOrder.docId) {
+@for (workOrder of workOrders(); track workOrder.docId) {
   <div
     class="timeline-item"
     [style.--background-color]="
       workOrderStatusColors[workOrder.data.status].backgroundSecondary || 'gray'
     "
     [style.--border-color]="workOrderStatusColors[workOrder.data.status].border || 'gray'"
-    [style.left.px]="workOrder.left"
-    [style.width.px]="workOrder.width"
+    [style.left.px]="workOrderPositionMap()[workOrder.docId]?.left"
+    [style.width.px]="workOrderPositionMap()[workOrder.docId]?.width"
+    [class.mouse-down]="(isMouseDown$ | async) && draggedWorkOrder()?.docId === workOrder.docId"
     (mouseenter)="onWorkOrderHover(workOrder)"
     (mouseleave)="onWorkOrderHover(null)"
     nlTooltip
@@ -33,6 +34,15 @@
         {{ workOrder.data.endDate | date: 'MMM d, yyyy' }}
       </span>
     </ng-template>
+
+    <span
+      class="nl-timeline-item-handle nl-timeline-item-handle--left"
+      (mousedown)="onDragHandleMouseDown($event, workOrder, 'left')"
+    ></span>
+    <span
+      class="nl-timeline-item-handle nl-timeline-item-handle--right"
+      (mousedown)="onDragHandleMouseDown($event, workOrder, 'right')"
+    ></span>
   </div>
 }
 

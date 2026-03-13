@@ -21,9 +21,41 @@
   top: 0;
   margin-top: 4px;
   padding: 10px 8px 10px 8px;
+  position: absolute;
 
   &:hover {
     cursor: pointer;
+  }
+
+  &.mouse-down {
+    cursor: grabbing;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+}
+
+.nl-timeline-item-handle {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background-color: transparent;
+  border-radius: 6px;
+  z-index: 2;
+  display: none;
+
+  .timeline-item:hover & {
+    display: block;
+  }
+
+  &--left {
+    left: -4px;
+    cursor: ew-resize;
+  }
+
+  &--right {
+    right: -4px;
+    cursor: ew-resize;
   }
 }
 
