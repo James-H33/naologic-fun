@@ -1,0 +1,29 @@
+<div class="header">
+  <div class="header-content">
+    <h2 class="header-content__title">Work Center Details</h2>
+    <p class="header-content__description">
+      Fill in the details below to create a new work center.
+    </p>
+  </div>
+
+  <div class="header-actions">
+    <button nlButton nlButtonVariant="outline" (click)="cancel()">Cancel</button>
+    <button nlButton nlButtonVariant="primary" [disabled]="form().invalid()" (click)="create()">
+      Create
+    </button>
+  </div>
+</div>
+
+<div class="form">
+  <div class="form-row">
+    <label for="company">Work Center Name</label>
+
+    <input
+      nlInput
+      id="company"
+      type="text"
+      [formField]="form.name"
+      placeholder="Amazon Fulfillment Center, etc..."
+    />
+  </div>
+</div>

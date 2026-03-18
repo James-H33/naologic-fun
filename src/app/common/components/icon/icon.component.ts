@@ -13,6 +13,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export enum Icon {
   Down = 'down',
+  Plus = 'plus',
 }
 
 @Component({

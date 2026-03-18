@@ -1,47 +1,28 @@
-import { createAction, props } from '@ngrx/store';
-import { WorkOrderDocument } from '@common/types/work-order-document.interface';
-import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
-import { TimescaleConfig } from '@common/types/timescales';
-import { NewWorkOrder } from '@common/types/new-work-order.interface';
 import { FormError } from '@common/types/form-error.interface';
+import { NewWorkOrder } from '@common/types/new-work-order.interface';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
+import { createAction, props } from '@ngrx/store';
 
-export const loadWorkOrdersStart = createAction(
-  '[Workorders] Load Work Orders Start',
-  props<{ viewId: string }>(),
-);
+export const loadWorkOrders = createAction('[Workorders] Load Work Orders');
 
 export const loadWorkOrdersSuccess = createAction(
   '[Workorders] Load Work Orders Success',
   props<{
     workOrders: WorkOrderDocument[];
-    workCenters: WorkCenterDocument[];
   }>(),
 );
 
-export const loadTimeScaleConfigStart = createAction(
-  '[Workorders] Load Timescale Config Start',
-  props<{ viewId: string }>(),
-);
-
-export const loadTimeScaleConfigSuccess = createAction(
-  '[Workorders] Load Timescale Config Success',
+export const addWorkOrders = createAction(
+  '[Workorders] Add Work Orders',
   props<{
-    config: TimescaleConfig;
+    workOrders: WorkOrderDocument[];
   }>(),
 );
 
-export const setTimescaleConfig = createAction(
-  '[Workorders] Set Timescale Config',
+export const addWorkOrdersSuccess = createAction(
+  '[Workorders] Add Work Orders Success',
   props<{
-    viewId: string;
-    config: TimescaleConfig;
-  }>(),
-);
-
-export const setTimescaleConfigSuccess = createAction(
-  '[Workorders] Set Timescale Config Success',
-  props<{
-    config: TimescaleConfig;
+    workOrders: WorkOrderDocument[];
   }>(),
 );
 

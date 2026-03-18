@@ -6,7 +6,8 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { WorkOrderStoreModule } from './workorders/store/work-order/work-order-store.module';
+import { WorkOrderStoreModule } from '@common/store/work-order/work-order-store.module';
+import { WorkCenterStoreModule } from '@common/store/work-centers/work-center-store.module';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom([
       // Stores
       WorkOrderStoreModule,
+      WorkCenterStoreModule,
     ]),
   ],
 };

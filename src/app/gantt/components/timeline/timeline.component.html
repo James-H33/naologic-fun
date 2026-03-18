@@ -49,6 +49,8 @@
               (workOrderHovered)="onWorkOrderHover($event)"
               (deleteWorkOrder)="deleteWorkOrder.emit($event)"
               (editWorkOrder)="editWorkOrder.emit($event)"
+              (updateWorkOrder)="updateWorkOrder.emit($event)"
+              (workOrderDragged)="workOrderBeingDragged.set($event)"
             >
             </nl-timeline-row>
           </div>

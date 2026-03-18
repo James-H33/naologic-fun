@@ -1,12 +1,6 @@
 import { inject } from '@angular/core';
-import { Timescale, TimescalesConfig } from '@common/types/timescales';
-import {
-  fakeWorkCenters,
-  fakeWorkOrders,
-  WorkOrderDocument,
-} from '@common/types/work-order-document.interface';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { getDateAsISOString } from '@common/utils/get-date-as-iso-string.function';
-import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
@@ -15,6 +9,8 @@ import moment from 'moment';
 import { timer } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import {
+  addWorkOrders,
+  addWorkOrdersSuccess,
   createWorkOrder,
   createWorkOrderFailure,
   createWorkOrderSuccess,
@@ -23,86 +19,22 @@ import {
   editWorkOrder,
   editWorkOrderFailure,
   editWorkOrderSuccess,
-  loadTimeScaleConfigStart,
-  loadTimeScaleConfigSuccess,
-  loadWorkOrdersStart,
+  loadWorkOrders,
   loadWorkOrdersSuccess,
-  setTimescaleConfig,
-  setTimescaleConfigSuccess,
 } from './work-order.actions';
-import {
-  selectViewId,
-  selectWorkCenters,
-  selectWorkOrders,
-  selectWorkOrdersGroupedByWorkCenter,
-} from './work-order.selectors';
+import { selectWorkOrders, selectWorkOrdersGroupedByWorkCenter } from './work-order.selectors';
 
-export const loadWorkorders$ = createEffect(
+export const loadWorkOrders$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(loadWorkOrdersStart),
-      switchMap((action) => {
-        const { viewId } = action;
-        const workOrdersKey = `workorders_view_${viewId}`;
-        const workCentersKey = `workcenters_view_${viewId}`;
+      ofType(loadWorkOrders),
+      switchMap(() => {
+        const workOrdersKey = `nl-workorders`;
 
-        const workorders = loadFromStorageByKey(workOrdersKey) ?? fakeWorkOrders;
-        const workCenters = loadFromStorageByKey(workCentersKey) ?? fakeWorkCenters;
+        const workOrders: WorkOrderDocument[] =
+          JSON.parse(localStorage.getItem(workOrdersKey) ?? 'null') ?? [];
 
-        return timer(200).pipe(
-          map(() =>
-            loadWorkOrdersSuccess({
-              workOrders: workorders,
-              workCenters: workCenters,
-            }),
-          ),
-        );
-      }),
-    );
-  },
-  { functional: true },
-);
-
-export const loadTimeScaleConfig$ = createEffect(
-  (actions$ = inject(Actions)) => {
-    return actions$.pipe(
-      ofType(loadTimeScaleConfigStart),
-      switchMap((action) => {
-        const { viewId } = action;
-        const configKey = `workorder_config_view_${viewId}`;
-
-        const config = loadFromStorageByKey(configKey);
-
-        return timer(200).pipe(
-          map(() =>
-            loadTimeScaleConfigSuccess({
-              config: config ?? TimescalesConfig[Timescale.Week],
-            }),
-          ),
-        );
-      }),
-    );
-  },
-  { functional: true },
-);
-
-export const setTimescaleConfig$ = createEffect(
-  (actions$ = inject(Actions)) => {
-    return actions$.pipe(
-      ofType(setTimescaleConfig),
-      switchMap((action) => {
-        const { viewId } = action;
-        const configKey = `workorder_config_view_${viewId}`;
-
-        setDataInStorageByKey(configKey, action.config);
-
-        return timer(200).pipe(
-          map(() =>
-            setTimescaleConfigSuccess({
-              config: action.config ?? TimescalesConfig[Timescale.Week],
-            }),
-          ),
-        );
+        return [loadWorkOrdersSuccess({ workOrders })];
       }),
     );
   },
@@ -249,7 +181,7 @@ export const deleteWorkOrder$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
       ofType(deleteWorkOrder),
-      concatLatestFrom(() => [store.select(selectWorkOrders)]),
+      concatLatestFrom(() => store.select(selectWorkOrders)),
       switchMap(([action, workOrders]) => {
         const { workOrderId } = action;
 
@@ -266,18 +198,35 @@ export const deleteWorkOrder$ = createEffect(
   { functional: true },
 );
 
+export const addWorkOrders$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(addWorkOrders),
+      concatLatestFrom(() => store.select(selectWorkOrders)),
+      switchMap(([{ workOrders }, currentWorkOrders]) => {
+        return timer(300).pipe(
+          map(() => {
+            const updatedWorkOrders = [...currentWorkOrders, ...workOrders];
+            return addWorkOrdersSuccess({ workOrders: updatedWorkOrders });
+          }),
+        );
+      }),
+    ),
+  { functional: true },
+);
+
 export const saveWorkOrdersToStorage$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(createWorkOrderSuccess, editWorkOrderSuccess, deleteWorkOrderSuccess),
-      concatLatestFrom(() => [
-        store.select(selectWorkOrders),
-        store.select(selectWorkCenters),
-        store.select(selectViewId),
-      ]),
-      tap(([, workOrders, workCenters, viewId]) => {
-        setDataInStorageByKey(`workorders_view_${viewId}`, workOrders);
-        setDataInStorageByKey(`workcenters_view_${viewId}`, workCenters);
+      ofType(
+        createWorkOrderSuccess,
+        editWorkOrderSuccess,
+        deleteWorkOrderSuccess,
+        addWorkOrdersSuccess,
+      ),
+      concatLatestFrom(() => store.select(selectWorkOrders)),
+      tap(([, workOrders]) => {
+        setDataInStorageByKey(`nl-workorders`, workOrders);
       }),
     );
   },

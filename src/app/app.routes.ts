@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { WorkordersComponent } from './workorders/workorders.component';
+import { WorkOrdersGanttComponent } from './gantt/work-orders-gantt.component';
 
 export const routes: Routes = [
   {
     path: 'timeline/:viewId',
-    component: WorkordersComponent,
+    component: WorkOrdersGanttComponent,
   },
   {
     path: '**',

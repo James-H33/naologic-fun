@@ -20,14 +20,16 @@ import {
   NgbDateStruct,
   NgbInputDatepicker,
 } from '@ng-bootstrap/ng-bootstrap/datepicker';
-import { DateToDateStructPipe } from '../../../common/pipes/date-to-date-struct.pipe';
+import { DateToDateStructPipe } from '@common/pipes/date-to-date-struct.pipe';
 import { StatusComponent } from '@common/components/status/status.component';
 import { FormError } from '@common/types/form-error.interface';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
+import { getDateAsISOString } from '@common/utils/get-date-as-iso-string.function';
 
 @Component({
-  selector: 'nl-create-work-order',
-  templateUrl: './create-work-order.component.html',
-  styleUrls: ['./create-work-order.component.scss'],
+  selector: 'nl-edit-work-order',
+  templateUrl: './edit-work-order.component.html',
+  styleUrls: ['./edit-work-order.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ButtonModule,
@@ -40,23 +42,23 @@ import { FormError } from '@common/types/form-error.interface';
     StatusComponent,
   ],
 })
-export class CreateWorkOrderComponent {
+export class EditWorkOrderComponent {
   open = input<boolean>();
-  workOrder = input<NewWorkOrder | null>();
+  workOrder = input<WorkOrderDocument | null>();
   workOrderError = input<FormError | null>();
   canceled = output<void>();
-  created = output<{ workOrder: NewWorkOrder }>();
+  updated = output<{ workOrder: WorkOrderDocument }>();
 
-  model = signal<NewWorkOrder>({
-    title: '',
+  model = signal<WorkOrderDocument['data']>({
+    name: '',
     startDate: null,
     endDate: null,
     workCenterId: '',
     status: 'open',
   });
 
-  form = form<NewWorkOrder>(this.model, (schemaPath) => {
-    required(schemaPath.title);
+  form = form<WorkOrderDocument['data']>(this.model, (schemaPath) => {
+    required(schemaPath.name);
   });
 
   startDatePicker = viewChild<NgbInputDatepicker>('startDatePicker');
@@ -90,7 +92,7 @@ export class CreateWorkOrderComponent {
       const workOrder = this.workOrder();
 
       if (workOrder) {
-        this.model.set(workOrder);
+        this.model.set(workOrder.data);
       }
     });
   }
@@ -98,7 +100,7 @@ export class CreateWorkOrderComponent {
   onStartDateChanged(date: NgbDateStruct) {
     this.model.update((current) => ({
       ...current,
-      startDate: new Date(date.year, date.month - 1, date.day),
+      startDate: this.convertDateStringToDateString(date),
     }));
 
     this.startDatePicker()?.close();
@@ -107,7 +109,7 @@ export class CreateWorkOrderComponent {
   onEndDateChanged(date: NgbDateStruct) {
     this.model.update((current) => ({
       ...current,
-      endDate: new Date(date.year, date.month - 1, date.day),
+      endDate: this.convertDateStringToDateString(date),
     }));
 
     this.endDatePicker()?.close();
@@ -124,14 +126,32 @@ export class CreateWorkOrderComponent {
     picker.toggle();
   }
 
-  create(): void {
+  update(): void {
     const formValue = this.form().value();
-    // Logic to create a new work order goes here
-    this.created.emit({ workOrder: formValue });
+    const workOrder = this.workOrder();
+
+    if (!workOrder) {
+      return;
+    }
+
+    const updatedWorkOrder: WorkOrderDocument = {
+      ...workOrder,
+      data: {
+        ...workOrder.data,
+        ...formValue,
+      },
+    };
+
+    this.updated.emit({ workOrder: updatedWorkOrder });
+  }
+
+  convertDateStringToDateString(dateStruct: NgbDateStruct | null): string | null {
+    return dateStruct
+      ? getDateAsISOString(new Date(dateStruct.year, dateStruct.month - 1, dateStruct.day))
+      : null;
   }
 
   cancel(): void {
-    // Logic to cancel the creation of a new work order goes here
     this.canceled.emit();
   }
 }
