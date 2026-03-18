@@ -1,29 +1,24 @@
-import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
-import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
+import { FormError } from '@common/types/form-error.interface';
+import { NewWorkOrder } from '@common/types/new-work-order.interface';
+import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { createFeature, createReducer, on } from '@ngrx/store';
 import {
+  addWorkOrdersSuccess,
   createWorkOrderFailure,
   createWorkOrderSuccess,
   deleteWorkOrderSuccess,
   editWorkOrderFailure,
   editWorkOrderSuccess,
-  loadTimeScaleConfigSuccess,
-  loadWorkOrdersStart,
   loadWorkOrdersSuccess,
   openCreateWorkOrderForm,
   openEditWorkOrderForm,
-  setTimescaleConfig,
   setWorkOrderFormOpenState,
 } from './work-order.actions';
-import { NewWorkOrder } from '@common/types/new-work-order.interface';
-import { FormError } from '@common/types/form-error.interface';
 
 interface WorkOrderState {
-  viewId: string | null;
   workOrders: WorkOrderDocument[];
   workCenters: WorkCenterDocument[];
-  timescaleConfig: TimescaleConfig;
   isCreateWorkOrderFormOpen: boolean;
   newWorkOrder: NewWorkOrder | null;
   newWorkOrderError: FormError | null;
@@ -32,10 +27,8 @@ interface WorkOrderState {
 }
 
 export const initialWorkOrderState: WorkOrderState = {
-  viewId: null,
   workOrders: [],
   workCenters: [],
-  timescaleConfig: TimescalesConfig[Timescale.Week],
   isCreateWorkOrderFormOpen: false,
   newWorkOrder: null,
   newWorkOrderError: null,
@@ -48,34 +41,17 @@ export const workOrderFeature = createFeature({
   reducer: createReducer<WorkOrderState>(
     initialWorkOrderState,
 
-    on(loadWorkOrdersStart, (state, { viewId }) => {
+    on(loadWorkOrdersSuccess, (state, { workOrders }) => {
       return {
         ...state,
-        workOrders: [],
-        workCenters: [],
-        viewId,
+        workOrders,
       };
     }),
 
-    on(loadWorkOrdersSuccess, (state, { workOrders, workCenters }) => {
+    on(addWorkOrdersSuccess, (state, { workOrders }) => {
       return {
         ...state,
-        workOrders: workOrders,
-        workCenters: workCenters,
-      };
-    }),
-
-    on(loadTimeScaleConfigSuccess, (state, { config }) => {
-      return {
-        ...state,
-        timescaleConfig: config,
-      };
-    }),
-
-    on(setTimescaleConfig, (state, { config }) => {
-      return {
-        ...state,
-        timescaleConfig: config,
+        workOrders,
       };
     }),
 

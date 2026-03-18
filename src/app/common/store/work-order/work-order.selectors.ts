@@ -1,13 +1,11 @@
 import { createSelector } from '@ngrx/store';
 import { workOrderFeature } from './work-order.reducer';
-import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
+import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 
 export const {
-  selectViewId,
   selectWorkOrders,
   selectWorkCenters,
-  selectTimescaleConfig,
   selectIsCreateWorkOrderFormOpen,
   selectNewWorkOrder,
   selectNewWorkOrderError,

@@ -16,7 +16,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { WorkCenterDocument } from '@common/types/work-center-documnet.interface';
+import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import moment from 'moment';
 import {
@@ -57,6 +57,7 @@ export class TimelineComponent implements AfterViewInit {
   createWorkOrder = output<{ date: Date; workCenterId: string }>();
   deleteWorkOrder = output<WorkOrderDocument['docId']>();
   editWorkOrder = output<WorkOrderDocument['docId']>();
+  updateWorkOrder = output<WorkOrderDocument>();
 
   workOrdersGroupedByWorkCenterAsArray = computed(() => {
     const workOrdersGroupedByWorkCenter = this.workOrdersGroupedByWorkCenter() || {};
@@ -71,6 +72,7 @@ export class TimelineComponent implements AfterViewInit {
 
   timelineInit$ = toObservable(this.timelineService.initialized$);
 
+  workOrderBeingDragged = signal<WorkOrderDocument | null>(null);
   mouseMove$ = this.timelineService.mouseMove$;
   mouseLeave$ = this.timelineService.mouseLeave$;
   mouseDown$ = this.timelineService.mouseDown$;
@@ -174,8 +176,9 @@ export class TimelineComponent implements AfterViewInit {
 
     effect(() => {
       const spaceKeyPressed = this.spaceKeyPressed();
+      const workOrderDragged = this.workOrderBeingDragged();
 
-      if (spaceKeyPressed) {
+      if (spaceKeyPressed || workOrderDragged) {
         this.removeCreateWorkorderPreview();
       }
     });
@@ -319,7 +322,7 @@ export class TimelineComponent implements AfterViewInit {
             curr.event,
           );
 
-          if (this.spaceKeyPressed()) {
+          if (this.spaceKeyPressed() || this.workOrderBeingDragged()) {
             this.removeCreateWorkorderPreview();
           } else {
             this.showCreateWorkorderPreview(relativeX, relativeY);

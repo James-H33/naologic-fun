@@ -18,9 +18,8 @@ import { TooltipModule } from '@common/directives/tooltip/tooltip.module';
 import { DropdownListItem } from '@common/types/dropdown-list-item.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { WorkOrderStatusColors } from '@common/types/work-order-status-colors';
-import { combineLatest, filter, map, merge, pairwise, take, takeUntil, tap } from 'rxjs';
+import { filter, map, merge, pairwise, take, takeUntil, tap } from 'rxjs';
 import { TimelineService } from '../../services/timeline.service';
-import { TimelineFacade } from '../timeline/timeline.facade';
 
 @Component({
   selector: 'nl-timeline-row',
@@ -47,9 +46,10 @@ export class TimelineRowComponent {
   workOrderHovered = output<WorkOrderDocument | null>();
   deleteWorkOrder = output<string>();
   editWorkOrder = output<string>();
+  updateWorkOrder = output<WorkOrderDocument>();
+  workOrderDragged = output<WorkOrderDocument | null>();
 
   timelineService = inject(TimelineService);
-  timelineFacade = inject(TimelineFacade);
   destroyRef = inject(DestroyRef);
 
   mouseMoveEvent$ = this.timelineService.mouseMove$;
@@ -87,6 +87,16 @@ export class TimelineRowComponent {
       }
 
       this.workOrderPositionMap.set(map);
+    });
+
+    effect(() => {
+      const workOrderBeingDragged = this.draggedWorkOrder();
+
+      if (workOrderBeingDragged) {
+        this.workOrderDragged.emit(workOrderBeingDragged);
+      } else {
+        this.workOrderDragged.emit(null);
+      }
     });
   }
 
@@ -133,7 +143,7 @@ export class TimelineRowComponent {
             },
           };
 
-          this.timelineFacade.updateWorkOrder(updatedWorkOrder);
+          this.updateWorkOrder.emit(updatedWorkOrder);
           this.draggedWorkOrder.set(null);
         }),
         take(1),

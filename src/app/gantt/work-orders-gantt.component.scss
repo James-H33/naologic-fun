@@ -28,10 +28,29 @@
   font-style: medium;
 }
 
+.nl-workorders-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.nl-workorders-actions {
+  display: flex;
+  gap: 16px;
+  padding-right: 16px;
+}
+
+.nl-workorders-action-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+}
+
 .nl-workorders-filters {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .nl-workorders-timescale-filter-button {

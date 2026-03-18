@@ -1,4 +1,4 @@
-import { WorkCenterDocument } from './work-center-documnet.interface';
+import { WorkCenterDocument } from './work-center-document.interface';
 import { WorkOrderStatus } from './work-order-status.type';
 
 export interface WorkOrderDocument {
