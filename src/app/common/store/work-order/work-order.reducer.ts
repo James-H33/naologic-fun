@@ -1,24 +1,11 @@
 import { FormError } from '@common/types/form-error.interface';
 import { NewWorkOrder } from '@common/types/new-work-order.interface';
-import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { createFeature, createReducer, on } from '@ngrx/store';
-import {
-  addWorkOrdersSuccess,
-  createWorkOrderFailure,
-  createWorkOrderSuccess,
-  deleteWorkOrderSuccess,
-  editWorkOrderFailure,
-  editWorkOrderSuccess,
-  loadWorkOrdersSuccess,
-  openCreateWorkOrderForm,
-  openEditWorkOrderForm,
-  setWorkOrderFormOpenState,
-} from './work-order.actions';
+import { WorkOrderActions } from './work-order.actions';
 
 interface WorkOrderState {
   workOrders: WorkOrderDocument[];
-  workCenters: WorkCenterDocument[];
   isCreateWorkOrderFormOpen: boolean;
   newWorkOrder: NewWorkOrder | null;
   newWorkOrderError: FormError | null;
@@ -28,7 +15,6 @@ interface WorkOrderState {
 
 export const initialWorkOrderState: WorkOrderState = {
   workOrders: [],
-  workCenters: [],
   isCreateWorkOrderFormOpen: false,
   newWorkOrder: null,
   newWorkOrderError: null,
@@ -41,28 +27,28 @@ export const workOrderFeature = createFeature({
   reducer: createReducer<WorkOrderState>(
     initialWorkOrderState,
 
-    on(loadWorkOrdersSuccess, (state, { workOrders }) => {
+    on(WorkOrderActions.loadWorkOrdersSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders,
       };
     }),
 
-    on(addWorkOrdersSuccess, (state, { workOrders }) => {
+    on(WorkOrderActions.addWorkOrdersSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders,
       };
     }),
 
-    on(setWorkOrderFormOpenState, (state, { open }) => {
+    on(WorkOrderActions.setWorkOrderFormOpenState, (state, { open }) => {
       return {
         ...state,
         isCreateWorkOrderFormOpen: open,
       };
     }),
 
-    on(openCreateWorkOrderForm, (state, { date, workCenterId }) => {
+    on(WorkOrderActions.openCreateWorkOrderForm, (state, { date, workCenterId }) => {
       return {
         ...state,
         isCreateWorkOrderFormOpen: true,
@@ -77,7 +63,7 @@ export const workOrderFeature = createFeature({
       };
     }),
 
-    on(createWorkOrderSuccess, (state, { workOrders }) => {
+    on(WorkOrderActions.createWorkOrderSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders: workOrders,
@@ -87,7 +73,7 @@ export const workOrderFeature = createFeature({
       };
     }),
 
-    on(editWorkOrderSuccess, (state, { workOrders }) => {
+    on(WorkOrderActions.editWorkOrderSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders: workOrders,
@@ -96,28 +82,28 @@ export const workOrderFeature = createFeature({
       };
     }),
 
-    on(createWorkOrderFailure, (state, { error }) => {
+    on(WorkOrderActions.createWorkOrderFailure, (state, { error }) => {
       return {
         ...state,
         newWorkOrderError: error,
       };
     }),
 
-    on(editWorkOrderFailure, (state, { error }) => {
+    on(WorkOrderActions.editWorkOrderFailure, (state, { error }) => {
       return {
         ...state,
         editWorkOrderError: error,
       };
     }),
 
-    on(deleteWorkOrderSuccess, (state, { workOrders }) => {
+    on(WorkOrderActions.deleteWorkOrderSuccess, (state, { workOrders }) => {
       return {
         ...state,
         workOrders: workOrders,
       };
     }),
 
-    on(openEditWorkOrderForm, (state, { workOrderId }) => {
+    on(WorkOrderActions.openEditWorkOrderForm, (state, { workOrderId }) => {
       return {
         ...state,
         editingWorkOrderId: workOrderId,

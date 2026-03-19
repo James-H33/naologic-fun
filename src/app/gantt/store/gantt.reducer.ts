@@ -1,11 +1,6 @@
 import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
 import { createFeature, createReducer, on } from '@ngrx/store';
-import {
-  loadTimeScaleConfigSuccess,
-  loadWorkOrdersStart,
-  loadWorkOrdersSuccessForGantt,
-  setTimescaleConfig,
-} from './gantt.actions';
+import { GanttActions } from './gantt.actions';
 
 interface GanttState {
   viewId: string | null;
@@ -25,7 +20,7 @@ export const ganttFeature = createFeature({
   name: 'gantt',
   reducer: createReducer<GanttState>(
     initialGanttState,
-    on(loadWorkOrdersStart, (state, { viewId }) => {
+    on(GanttActions.loadWorkOrdersStart, (state, { viewId }) => {
       return {
         ...state,
         workOrderIds: [],
@@ -34,7 +29,7 @@ export const ganttFeature = createFeature({
       };
     }),
 
-    on(loadWorkOrdersSuccessForGantt, (state, { workOrderIds, workCenterIds }) => {
+    on(GanttActions.loadWorkOrdersSuccessForGantt, (state, { workOrderIds, workCenterIds }) => {
       return {
         ...state,
         workOrderIds,
@@ -42,14 +37,14 @@ export const ganttFeature = createFeature({
       };
     }),
 
-    on(loadTimeScaleConfigSuccess, (state, { config }) => {
+    on(GanttActions.loadTimeScaleConfigSuccess, (state, { config }) => {
       return {
         ...state,
         timescaleConfig: config,
       };
     }),
 
-    on(setTimescaleConfig, (state, { config }) => {
+    on(GanttActions.setTimescaleConfig, (state, { config }) => {
       return {
         ...state,
         timescaleConfig: config,
