@@ -2,15 +2,25 @@ import { createSelector } from '@ngrx/store';
 import { workOrderFeature } from './work-order.reducer';
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
+import { selectWorkCenters } from '../work-centers/work-center.selectors';
 
 export const {
   selectWorkOrders,
-  selectWorkCenters,
   selectIsCreateWorkOrderFormOpen,
   selectNewWorkOrder,
   selectNewWorkOrderError,
   selectEditingWorkOrderId,
 } = workOrderFeature;
+
+export const selectWorkOrdersMap = createSelector(selectWorkOrders, (workOrders) => {
+  const map: Record<string, WorkOrderDocument> = {};
+
+  for (const wo of workOrders) {
+    map[wo.docId] = wo;
+  }
+
+  return map;
+});
 
 export const selectWorkOrdersGroupedByWorkCenter = createSelector(
   selectWorkOrders,

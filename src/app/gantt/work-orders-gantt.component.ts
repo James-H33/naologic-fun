@@ -7,20 +7,9 @@ import { Timescale, TimescaleNames, TimescalesConfig } from '@common/types/times
 import { Store } from '@ngrx/store';
 import { CreateWorkOrderComponent } from '@common/components/create-work-order/create-work-order.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
-import {
-  createWorkOrder,
-  deleteWorkOrder,
-  editWorkOrder,
-  openCreateWorkOrderForm,
-  openEditWorkOrderForm,
-  setWorkOrderFormOpenState,
-} from '@common/store/work-order/work-order.actions';
+import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
 
-import {
-  loadTimeScaleConfigStart,
-  loadWorkOrdersStart,
-  setTimescaleConfig,
-} from './store/gantt.actions';
+import { GanttActions } from './store/gantt.actions';
 
 import {
   selectEditingWorkOrder,
@@ -39,10 +28,7 @@ import {
   selectNewWorkCenter,
 } from '@common/store/work-centers/work-center.selectors';
 import { CreateWorkCenterComponent } from '@common/components/create-work-center/create-work-center.component';
-import {
-  createWorkCenter,
-  toggleCreateWorkCenterForm,
-} from '@common/store/work-centers/work-center.actions';
+import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
 import { NewWorkCenter } from '@common/types/new-work-center.interface';
 import { GanttStoreModule } from './store/gantt-store.module';
 
@@ -78,21 +64,13 @@ export class WorkOrdersGanttComponent implements OnInit {
   );
 
   isCreateWorkOrderFormOpen = this.store.selectSignal(selectIsCreateWorkOrderFormOpen);
-
   isEditWorkOrderFormOpen = this.store.selectSignal(selectIsEditWorkOrderFormOpen);
-
   isCreateWorkCenterFormOpen = this.store.selectSignal(selectIsCreateWorkCenterFormOpen);
-
   timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
-
   newWorkOrder = this.store.selectSignal(selectNewWorkOrder);
-
   newWorkCenter = this.store.selectSignal(selectNewWorkCenter);
-
   editingWorkOrder = this.store.selectSignal(selectEditingWorkOrder);
-
   newWorkOrderError = this.store.selectSignal(selectNewWorkOrderError);
-
   viewId = '123';
 
   TimescaleNames = TimescaleNames;
@@ -104,8 +82,8 @@ export class WorkOrdersGanttComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.store.dispatch(loadTimeScaleConfigStart({ viewId: this.viewId }));
-    this.store.dispatch(loadWorkOrdersStart({ viewId: this.viewId }));
+    this.store.dispatch(GanttActions.loadTimeScaleConfigStart({ viewId: this.viewId }));
+    this.store.dispatch(GanttActions.loadWorkOrdersStart({ viewId: this.viewId }));
   }
 
   onTimescaleFilterOptionSelected(event: { id: string; title: string }): void {
@@ -113,7 +91,7 @@ export class WorkOrdersGanttComponent implements OnInit {
     const config = TimescalesConfig[event.id as Timescale];
 
     this.store.dispatch(
-      setTimescaleConfig({
+      GanttActions.setTimescaleConfig({
         viewId: this.viewId,
         config,
       }),
@@ -122,13 +100,16 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onCreateWorkOrder(event: { date: Date; workCenterId: string }) {
     this.store.dispatch(
-      openCreateWorkOrderForm({ date: event.date, workCenterId: event.workCenterId }),
+      WorkOrderActions.openCreateWorkOrderForm({
+        date: event.date,
+        workCenterId: event.workCenterId,
+      }),
     );
   }
 
   onDeleteWorkOrder(workOrderId: string) {
     this.store.dispatch(
-      deleteWorkOrder({
+      WorkOrderActions.deleteWorkOrder({
         workOrderId,
       }),
     );
@@ -136,7 +117,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onUpdateWorkOrder(workOrder: WorkOrderDocument) {
     this.store.dispatch(
-      editWorkOrder({
+      WorkOrderActions.editWorkOrder({
         workOrder,
       }),
     );
@@ -144,7 +125,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onOpenEditWorkOrderForm(workOrderId: string | null) {
     this.store.dispatch(
-      openEditWorkOrderForm({
+      WorkOrderActions.openEditWorkOrderForm({
         workOrderId,
       }),
     );
@@ -152,7 +133,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onEditWorkOrder(update: { workOrder: WorkOrderDocument }) {
     this.store.dispatch(
-      editWorkOrder({
+      WorkOrderActions.editWorkOrder({
         workOrder: update.workOrder,
       }),
     );
@@ -160,23 +141,23 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onWorkOrderCreated(event: { workOrder: NewWorkOrder }) {
     this.store.dispatch(
-      createWorkOrder({
+      WorkOrderActions.createWorkOrder({
         workOrder: event.workOrder,
       }),
     );
   }
 
   onCreateWorkCenter(event: { workCenter: NewWorkCenter }) {
-    this.store.dispatch(createWorkCenter({ workCenter: event.workCenter }));
+    this.store.dispatch(WorkCenterActions.createWorkCenter({ workCenter: event.workCenter }));
   }
 
   onShowCreateWorkOrderForm(open: boolean) {
     const isOpen = this.isCreateWorkOrderFormOpen();
 
     if (isOpen === open) {
-      this.store.dispatch(setWorkOrderFormOpenState({ open: false }));
+      this.store.dispatch(WorkOrderActions.setWorkOrderFormOpenState({ open: false }));
     } else {
-      this.store.dispatch(setWorkOrderFormOpenState({ open }));
+      this.store.dispatch(WorkOrderActions.setWorkOrderFormOpenState({ open }));
     }
   }
 
@@ -184,9 +165,9 @@ export class WorkOrdersGanttComponent implements OnInit {
     const isOpen = this.isCreateWorkCenterFormOpen();
 
     if (isOpen === open) {
-      this.store.dispatch(toggleCreateWorkCenterForm({ open: false }));
+      this.store.dispatch(WorkCenterActions.toggleCreateWorkCenterForm({ open: false }));
     } else {
-      this.store.dispatch(toggleCreateWorkCenterForm({ open }));
+      this.store.dispatch(WorkCenterActions.toggleCreateWorkCenterForm({ open }));
     }
   }
 }

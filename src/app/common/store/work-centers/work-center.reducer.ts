@@ -1,11 +1,8 @@
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { createFeature, createReducer, on } from '@ngrx/store';
 import {
-  addWorkCentersSuccess,
-  createWorkCenterSuccess,
-  loadWorkCentersSuccess,
-  toggleCreateWorkCenterForm,
-} from './work-center.actions';
+  WorkCenterActions,
+} from '@common/store/work-centers/work-center.actions';
 import { NewWorkCenter } from '@common/types/new-work-center.interface';
 
 interface WorkCenterState {
@@ -25,14 +22,14 @@ export const workCenterFeature = createFeature({
   reducer: createReducer<WorkCenterState>(
     initialWorkCenterState,
 
-    on(loadWorkCentersSuccess, (state, { workCenters }) => {
+    on(WorkCenterActions.loadWorkCentersSuccess, (state, { workCenters }) => {
       return {
         ...state,
         workCenters,
       };
     }),
 
-    on(createWorkCenterSuccess, (state, { workCenters }) => {
+    on(WorkCenterActions.createWorkCenterSuccess, (state, { workCenters }) => {
       return {
         ...state,
         workCenters,
@@ -41,14 +38,14 @@ export const workCenterFeature = createFeature({
       };
     }),
 
-    on(toggleCreateWorkCenterForm, (state, { open }) => {
+    on(WorkCenterActions.toggleCreateWorkCenterForm, (state, { open }) => {
       return {
         ...state,
         isCreateWorkCenterFormOpen: open,
       };
     }),
 
-    on(addWorkCentersSuccess, (state, { workCenters }) => {
+    on(WorkCenterActions.addWorkCentersSuccess, (state, { workCenters }) => {
       return {
         ...state,
         workCenters,

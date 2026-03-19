@@ -9,17 +9,10 @@ import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.fun
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { switchMap, timer, map } from 'rxjs';
-import {
-  loadTimeScaleConfigStart,
-  loadTimeScaleConfigSuccess,
-  loadWorkOrdersStart,
-  loadWorkOrdersSuccessForGantt,
-  setTimescaleConfig,
-  setTimescaleConfigSuccess,
-} from './gantt.actions';
+import { GanttActions } from './gantt.actions';
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
-import { addWorkCenters } from '@common/store/work-centers/work-center.actions';
-import { addWorkOrders } from '@common/store/work-order/work-order.actions';
+import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
+import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
 
 /**
  * Payload
@@ -38,7 +31,7 @@ import { addWorkOrders } from '@common/store/work-order/work-order.actions';
 export const loadWorkorders$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(loadWorkOrdersStart),
+      ofType(GanttActions.loadWorkOrdersStart),
       switchMap((action) => {
         const { viewId } = action;
         const workOrdersKey = `workorders_view_${viewId}`;
@@ -54,17 +47,9 @@ export const loadWorkorders$ = createEffect(
 
         return timer(200).pipe(
           switchMap(() => [
-            loadWorkOrdersSuccessForGantt({
+            GanttActions.loadWorkOrdersSuccessForGantt({
               workOrderIds,
               workCenterIds,
-            }),
-
-            addWorkCenters({
-              workCenters,
-            }),
-
-            addWorkOrders({
-              workOrders: workorders,
             }),
           ]),
         );
@@ -77,7 +62,7 @@ export const loadWorkorders$ = createEffect(
 export const loadTimeScaleConfig$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(loadTimeScaleConfigStart),
+      ofType(GanttActions.loadTimeScaleConfigStart),
       switchMap((action) => {
         const { viewId } = action;
         const configKey = `workorder_config_view_${viewId}`;
@@ -86,7 +71,7 @@ export const loadTimeScaleConfig$ = createEffect(
 
         return timer(200).pipe(
           map(() =>
-            loadTimeScaleConfigSuccess({
+            GanttActions.loadTimeScaleConfigSuccess({
               config: config ?? TimescalesConfig[Timescale.Week],
             }),
           ),
@@ -100,7 +85,7 @@ export const loadTimeScaleConfig$ = createEffect(
 export const setTimescaleConfig$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(setTimescaleConfig),
+      ofType(GanttActions.setTimescaleConfig),
       switchMap((action) => {
         const { viewId } = action;
         const configKey = `workorder_config_view_${viewId}`;
@@ -109,7 +94,7 @@ export const setTimescaleConfig$ = createEffect(
 
         return timer(200).pipe(
           map(() =>
-            setTimescaleConfigSuccess({
+            GanttActions.setTimescaleConfigSuccess({
               config: action.config ?? TimescalesConfig[Timescale.Week],
             }),
           ),

@@ -1,13 +1,6 @@
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { map, switchMap, tap, timer } from 'rxjs';
-import {
-  addWorkCenters,
-  addWorkCentersSuccess,
-  createWorkCenter,
-  createWorkCenterSuccess,
-  loadWorkCenters,
-  loadWorkCentersSuccess,
-} from './work-center.actions';
+import { WorkCenterActions } from './work-center.actions';
 import { inject } from '@angular/core';
 import { concatLatestFrom } from '@ngrx/operators';
 import { selectWorkCenters } from './work-center.selectors';
@@ -18,14 +11,14 @@ import { WorkCenterDocument } from '@common/types/work-center-document.interface
 export const loadWorkCenters$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(loadWorkCenters),
+      ofType(WorkCenterActions.loadWorkCenters),
       switchMap(() => {
         const workCentersKey = `nl-workcenters`;
 
         const workCenters: WorkCenterDocument[] =
           JSON.parse(localStorage.getItem(workCentersKey) ?? 'null') ?? [];
 
-        return [loadWorkCentersSuccess({ workCenters })];
+        return [WorkCenterActions.loadWorkCentersSuccess({ workCenters })];
       }),
     );
   },
@@ -35,10 +28,12 @@ export const loadWorkCenters$ = createEffect(
 export const createWorkCenter$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) =>
     actions$.pipe(
-      ofType(createWorkCenter),
+      ofType(WorkCenterActions.createWorkCenter),
       concatLatestFrom(() => [store.select(selectWorkCenters)]),
       switchMap(([, workCenters]) => {
-        return timer(300).pipe(map(() => createWorkCenterSuccess({ workCenters })));
+        return timer(300).pipe(
+          map(() => WorkCenterActions.createWorkCenterSuccess({ workCenters })),
+        );
       }),
     ),
   { functional: true },
@@ -47,13 +42,13 @@ export const createWorkCenter$ = createEffect(
 export const addWorkCenter$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) =>
     actions$.pipe(
-      ofType(addWorkCenters),
+      ofType(WorkCenterActions.addWorkCenters),
       concatLatestFrom(() => [store.select(selectWorkCenters)]),
       switchMap(([{ workCenters }, currentWorkCenters]) => {
         return timer(300).pipe(
           map(() => {
             const updatedWorkCenters = [...currentWorkCenters, ...workCenters];
-            return addWorkCentersSuccess({ workCenters: updatedWorkCenters });
+            return WorkCenterActions.addWorkCentersSuccess({ workCenters: updatedWorkCenters });
           }),
         );
       }),
@@ -64,7 +59,7 @@ export const addWorkCenter$ = createEffect(
 export const saveWorkCentersToStorage$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(createWorkCenterSuccess, addWorkCentersSuccess),
+      ofType(WorkCenterActions.createWorkCenterSuccess, WorkCenterActions.addWorkCentersSuccess),
       concatLatestFrom(() => [store.select(selectWorkCenters)]),
       tap(([, workCenters]) => {
         setDataInStorageByKey(`nl-workcenters`, workCenters);

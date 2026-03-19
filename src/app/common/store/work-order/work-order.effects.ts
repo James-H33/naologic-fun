@@ -8,33 +8,25 @@ import { Store } from '@ngrx/store';
 import moment from 'moment';
 import { timer } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
+import { WorkOrderActions } from './work-order.actions';
+
 import {
-  addWorkOrders,
-  addWorkOrdersSuccess,
-  createWorkOrder,
-  createWorkOrderFailure,
-  createWorkOrderSuccess,
-  deleteWorkOrder,
-  deleteWorkOrderSuccess,
-  editWorkOrder,
-  editWorkOrderFailure,
-  editWorkOrderSuccess,
-  loadWorkOrders,
-  loadWorkOrdersSuccess,
-} from './work-order.actions';
-import { selectWorkOrders, selectWorkOrdersGroupedByWorkCenter } from './work-order.selectors';
+  selectWorkOrders,
+  selectWorkOrdersGroupedByWorkCenter,
+  selectWorkOrdersMap,
+} from './work-order.selectors';
 
 export const loadWorkOrders$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
-      ofType(loadWorkOrders),
+      ofType(WorkOrderActions.loadWorkOrders),
       switchMap(() => {
         const workOrdersKey = `nl-workorders`;
 
         const workOrders: WorkOrderDocument[] =
           JSON.parse(localStorage.getItem(workOrdersKey) ?? 'null') ?? [];
 
-        return [loadWorkOrdersSuccess({ workOrders })];
+        return [WorkOrderActions.loadWorkOrdersSuccess({ workOrders })];
       }),
     );
   },
@@ -44,7 +36,7 @@ export const loadWorkOrders$ = createEffect(
 export const createWorkOrder$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(createWorkOrder),
+      ofType(WorkOrderActions.createWorkOrder),
       concatLatestFrom(() => [
         store.select(selectWorkOrders),
         store.select(selectWorkOrdersGroupedByWorkCenter),
@@ -69,7 +61,7 @@ export const createWorkOrder$ = createEffect(
 
           if (overlaps) {
             return [
-              createWorkOrderFailure({
+              WorkOrderActions.createWorkOrderFailure({
                 error: {
                   message:
                     'Work order dates overlap with existing work order for the same work center.',
@@ -99,7 +91,7 @@ export const createWorkOrder$ = createEffect(
           map(() => {
             const updatedWorkOrders = [...workOrders, newWorkOrder];
 
-            return createWorkOrderSuccess({ workOrders: updatedWorkOrders });
+            return WorkOrderActions.createWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),
@@ -111,7 +103,7 @@ export const createWorkOrder$ = createEffect(
 export const editWorkOrder$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(editWorkOrder),
+      ofType(WorkOrderActions.editWorkOrder),
       concatLatestFrom(() => [
         store.select(selectWorkOrders),
         store.select(selectWorkOrdersGroupedByWorkCenter),
@@ -141,7 +133,7 @@ export const editWorkOrder$ = createEffect(
 
           if (overlaps) {
             return [
-              editWorkOrderFailure({
+              WorkOrderActions.editWorkOrderFailure({
                 error: {
                   message:
                     'Work order dates overlap with existing work order for the same work center.',
@@ -168,7 +160,7 @@ export const editWorkOrder$ = createEffect(
               wo.docId === docId ? updatedWorkOrder : wo,
             );
 
-            return editWorkOrderSuccess({ workOrders: updatedWorkOrders });
+            return WorkOrderActions.editWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),
@@ -180,7 +172,7 @@ export const editWorkOrder$ = createEffect(
 export const deleteWorkOrder$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(deleteWorkOrder),
+      ofType(WorkOrderActions.deleteWorkOrder),
       concatLatestFrom(() => store.select(selectWorkOrders)),
       switchMap(([action, workOrders]) => {
         const { workOrderId } = action;
@@ -189,7 +181,7 @@ export const deleteWorkOrder$ = createEffect(
 
         return timer(200).pipe(
           map(() => {
-            return deleteWorkOrderSuccess({ workOrders: updatedWorkOrders });
+            return WorkOrderActions.deleteWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),
@@ -201,13 +193,29 @@ export const deleteWorkOrder$ = createEffect(
 export const addWorkOrders$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) =>
     actions$.pipe(
-      ofType(addWorkOrders),
-      concatLatestFrom(() => store.select(selectWorkOrders)),
-      switchMap(([{ workOrders }, currentWorkOrders]) => {
+      ofType(WorkOrderActions.addWorkOrders),
+      concatLatestFrom(() => [store.select(selectWorkOrders), store.select(selectWorkOrdersMap)]),
+      switchMap(([{ workOrders }, currentWorkOrders, currentWorkOrdersMap]) => {
         return timer(300).pipe(
           map(() => {
-            const updatedWorkOrders = [...currentWorkOrders, ...workOrders];
-            return addWorkOrdersSuccess({ workOrders: updatedWorkOrders });
+            const netNewWorkOrders: WorkOrderDocument[] = [];
+            const updatedWorkOrdersMap = new Map<string, WorkOrderDocument>();
+
+            for (const wo of workOrders) {
+              updatedWorkOrdersMap.set(wo.docId, wo);
+
+              if (!currentWorkOrdersMap[wo.docId]) {
+                netNewWorkOrders.push(wo);
+              }
+            }
+
+            const updatedCurrentWorkOrders = currentWorkOrders.map((wo) =>
+              updatedWorkOrdersMap.has(wo.docId) ? updatedWorkOrdersMap.get(wo.docId)! : wo,
+            );
+
+            const updatedWorkOrders = [...updatedCurrentWorkOrders, ...netNewWorkOrders];
+
+            return WorkOrderActions.addWorkOrdersSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),
@@ -219,10 +227,10 @@ export const saveWorkOrdersToStorage$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
       ofType(
-        createWorkOrderSuccess,
-        editWorkOrderSuccess,
-        deleteWorkOrderSuccess,
-        addWorkOrdersSuccess,
+        WorkOrderActions.createWorkOrderSuccess,
+        WorkOrderActions.editWorkOrderSuccess,
+        WorkOrderActions.deleteWorkOrderSuccess,
+        WorkOrderActions.addWorkOrdersSuccess,
       ),
       concatLatestFrom(() => store.select(selectWorkOrders)),
       tap(([, workOrders]) => {
