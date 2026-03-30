@@ -50,6 +50,7 @@ export class TimelineComponent implements AfterViewInit {
 
   timescaleConfig = input<TimescaleConfig>(TimescalesConfig[Timescale.Week]);
 
+  workCentersMap = input<Record<WorkCenterDocument['docId'], WorkCenterDocument>>({});
   workOrdersGroupedByWorkCenter = input<Record<WorkCenterDocument['docId'], WorkOrderDocument[]>>(
     {},
   );
@@ -61,8 +62,10 @@ export class TimelineComponent implements AfterViewInit {
 
   workOrdersGroupedByWorkCenterAsArray = computed(() => {
     const workOrdersGroupedByWorkCenter = this.workOrdersGroupedByWorkCenter() || {};
+    const workCentersMap = this.workCentersMap() || {};
 
     return Object.entries(workOrdersGroupedByWorkCenter).map(([workCenterId, workOrders]) => ({
+      workCenterName: workCentersMap[workCenterId]?.data.name ?? 'Unknown Work Center',
       workCenterId,
       workOrders,
     }));

@@ -3,6 +3,7 @@ import { createFeature, createReducer, on } from '@ngrx/store';
 import { GanttActions } from './gantt.actions';
 
 interface GanttState {
+  name: string | null;
   viewId: string | null;
   workOrderIds: string[];
   workCenterIds: string[];
@@ -11,6 +12,7 @@ interface GanttState {
 
 const initialGanttState: GanttState = {
   viewId: null,
+  name: null,
   workOrderIds: [],
   workCenterIds: [],
   timescaleConfig: TimescalesConfig[Timescale.Week],
@@ -20,20 +22,22 @@ export const ganttFeature = createFeature({
   name: 'gantt',
   reducer: createReducer<GanttState>(
     initialGanttState,
-    on(GanttActions.loadWorkOrdersStart, (state, { viewId }) => {
+    on(GanttActions.loadViewDataStart, (state, { viewId }) => {
       return {
         ...state,
         workOrderIds: [],
         workCenterIds: [],
+        name: null,
         viewId,
       };
     }),
 
-    on(GanttActions.loadWorkOrdersSuccessForGantt, (state, { workOrderIds, workCenterIds }) => {
+    on(GanttActions.loadViewDataSuccess, (state, { workOrderIds, workCenterIds, name }) => {
       return {
         ...state,
         workOrderIds,
         workCenterIds,
+        name,
       };
     }),
 
@@ -48,6 +52,17 @@ export const ganttFeature = createFeature({
       return {
         ...state,
         timescaleConfig: config,
+      };
+    }),
+
+    on(GanttActions.createWorkOrderSuccess, (state, { workOrderId, workCenterId }) => {
+      return {
+        ...state,
+        workOrderIds: [...state.workOrderIds, workOrderId],
+        // If the work center for the new work order isn't already in the list of work centers for the view, add it
+        workCenterIds: state.workCenterIds.includes(workCenterId)
+          ? state.workCenterIds
+          : [...state.workCenterIds, workCenterId],
       };
     }),
   ),
