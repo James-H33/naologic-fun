@@ -7,6 +7,7 @@ import { selectWorkCenters } from './work-center.selectors';
 import { Store } from '@ngrx/store';
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
+import { WorkCenterAPIService } from '@common/services/api/work-center-api.service';
 
 export const loadWorkCenters$ = createEffect(
   (actions$ = inject(Actions)) => {
@@ -26,13 +27,25 @@ export const loadWorkCenters$ = createEffect(
 );
 
 export const createWorkCenter$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) =>
+  (
+    actions$ = inject(Actions),
+    store = inject(Store),
+    workCenterAPIService = inject(WorkCenterAPIService),
+  ) =>
     actions$.pipe(
       ofType(WorkCenterActions.createWorkCenter),
       concatLatestFrom(() => [store.select(selectWorkCenters)]),
-      switchMap(([, workCenters]) => {
-        return timer(300).pipe(
-          map(() => WorkCenterActions.createWorkCenterSuccess({ workCenters })),
+      switchMap(([action, workCenters]) => {
+        const { workCenter } = action;
+
+        return workCenterAPIService.createWorkCenter(workCenter).pipe(
+          map((workCenterFromResponse) => {
+            const updatedWorkCenters = [...workCenters, workCenterFromResponse];
+
+            return WorkCenterActions.createWorkCenterSuccess({
+              workCenters: updatedWorkCenters,
+            });
+          }),
         );
       }),
     ),

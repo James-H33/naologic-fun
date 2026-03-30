@@ -1,57 +1,37 @@
 import { inject } from '@angular/core';
-import { TimescalesConfig, Timescale } from '@common/types/timescales';
-import {
-  fakeWorkOrders,
-  fakeWorkCenters,
-  WorkOrderDocument,
-} from '@common/types/work-order-document.interface';
-import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
-import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
-import { createEffect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, timer, map } from 'rxjs';
-import { GanttActions } from './gantt.actions';
-import { WorkCenterDocument } from '@common/types/work-center-document.interface';
+import { WorkOrderService } from '@common/services/work-order.service';
 import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
 import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
-
-/**
- * Payload
- * {
- *    viewId: string;
- *    workCenterIds: string[];
- *    workOrderIds: string[];
- * }
- *
- * 1. Pull work orders and work centers that may have been stored in local storage
- * 2. Make API call to get work orders and work centers for the view that weren't in local storage (if applicable)
- * 3. Dispatch actions to add work orders and work centers to the store
- *
- */
+import { Timescale, TimescalesConfig } from '@common/types/timescales';
+import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
+import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { combineLatest, map, switchMap, timer } from 'rxjs';
+import { GanttService } from '../services/gantt.service';
+import { GanttActions } from './gantt.actions';
+import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
+import { WorkCenterAPIService } from '@common/services/api/work-center-api.service';
 
 export const loadWorkorders$ = createEffect(
-  (actions$ = inject(Actions)) => {
+  (
+    actions$ = inject(Actions),
+    ganttService = inject(GanttService),
+    workOrderAPIService = inject(WorkOrderAPIService),
+    workCenterAPIService = inject(WorkCenterAPIService),
+  ) => {
     return actions$.pipe(
-      ofType(GanttActions.loadWorkOrdersStart),
+      ofType(GanttActions.loadViewDataStart),
       switchMap((action) => {
         const { viewId } = action;
-        const workOrdersKey = `workorders_view_${viewId}`;
-        const workCentersKey = `workcenters_view_${viewId}`;
 
-        const workorders: WorkOrderDocument[] =
-          loadFromStorageByKey(workOrdersKey) ?? fakeWorkOrders;
-        const workCenters: WorkCenterDocument[] =
-          loadFromStorageByKey(workCentersKey) ?? fakeWorkCenters;
-
-        const workOrderIds = workorders.map((wo) => wo.docId);
-        const workCenterIds = workCenters.map((wc) => wc.docId);
-
-        return timer(200).pipe(
-          switchMap(() => [
-            GanttActions.loadWorkOrdersSuccessForGantt({
-              workOrderIds,
-              workCenterIds,
-            }),
-          ]),
+        return getDataForView(viewId, ganttService, workOrderAPIService, workCenterAPIService).pipe(
+          switchMap(({ workOrderIds, workCenterIds, workOrders, workCenters, name }) => {
+            return [
+              GanttActions.loadViewDataSuccess({ workOrderIds, workCenterIds, name }),
+              WorkOrderActions.addWorkOrders({ workOrders }),
+              WorkCenterActions.addWorkCenters({ workCenters }),
+            ];
+          }),
         );
       }),
     );
@@ -104,3 +84,92 @@ export const setTimescaleConfig$ = createEffect(
   },
   { functional: true },
 );
+
+export const createWorkOrder$ = createEffect(
+  (actions$ = inject(Actions), workOrderService = inject(WorkOrderService)) => {
+    return actions$.pipe(
+      ofType(GanttActions.createWorkOrder),
+      switchMap((action) => {
+        const { newWorkOrder } = action;
+
+        return workOrderService.createWorkOrder(newWorkOrder).pipe(
+          switchMap(({ result, error }) => {
+            if (error) {
+              return [WorkOrderActions.createWorkOrderFailure({ error })];
+            }
+
+            return [
+              GanttActions.createWorkOrderSuccess({
+                workOrderId: result!.docId,
+                workCenterId: newWorkOrder.workCenterId as string,
+              }),
+              WorkOrderActions.setWorkOrderFormOpenState({
+                open: false,
+              }),
+              WorkOrderActions.addWorkOrders({
+                workOrders: [result!],
+              }),
+            ];
+          }),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const updateWorkOrderDates$ = createEffect(
+  (actions$ = inject(Actions), workOrderService = inject(WorkOrderService)) => {
+    return actions$.pipe(
+      ofType(GanttActions.updateWorkOrderDates),
+      switchMap((action) => {
+        const { workOrder } = action;
+
+        return workOrderService.updateWorkOrder(workOrder).pipe(
+          switchMap(({ result, error }) => {
+            // if (error) {
+            //   return [WorkOrderActions.updateWorkOrderFailure({ error })];
+            // }
+
+            return [
+              GanttActions.updateWorkOrderDatesSuccess({
+                workOrderId: result!.docId,
+                workCenterId: workOrder.data.workCenterId as string,
+              }),
+              WorkOrderActions.addWorkOrders({
+                workOrders: [result!],
+              }),
+            ];
+          }),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+function getDataForView(
+  viewId: string,
+  ganttService: GanttService,
+  workOrderAPIService: WorkOrderAPIService,
+  workCenterAPIService: WorkCenterAPIService,
+) {
+  return ganttService.getViewData(viewId).pipe(
+    switchMap(({ workOrderIds, workCenterIds, ...data }) => {
+      return combineLatest([
+        workOrderAPIService.getWorkOrders(workOrderIds),
+        workCenterAPIService.getWorkCenters(workCenterIds),
+      ]).pipe(
+        map(([workOrders, workCenters]) => {
+          return {
+            ...data,
+            workOrderIds,
+            workCenterIds,
+            workOrders,
+            workCenters,
+          };
+        }),
+      );
+    }),
+  );
+}

@@ -15,6 +15,9 @@ import {
   selectWorkOrdersGroupedByWorkCenter,
   selectWorkOrdersMap,
 } from './work-order.selectors';
+import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
+import { CreateWorkOrderDto } from '@common/types/create-work-order.dto';
+import { WorkOrderService } from '@common/services/work-order.service';
 
 export const loadWorkOrders$ = createEffect(
   (actions$ = inject(Actions)) => {
@@ -34,62 +37,24 @@ export const loadWorkOrders$ = createEffect(
 );
 
 export const createWorkOrder$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
+  (
+    actions$ = inject(Actions),
+    store = inject(Store),
+    workOrderService = inject(WorkOrderService),
+  ) => {
     return actions$.pipe(
       ofType(WorkOrderActions.createWorkOrder),
-      concatLatestFrom(() => [
-        store.select(selectWorkOrders),
-        store.select(selectWorkOrdersGroupedByWorkCenter),
-      ]),
-      switchMap(([action, workOrders, workOrdersGroupedByWorkCenter]) => {
+      concatLatestFrom(() => [store.select(selectWorkOrders)]),
+      switchMap(([action, workOrders]) => {
         const { workOrder } = action;
-        const workOrdersForWorkCenter =
-          workOrdersGroupedByWorkCenter[workOrder.workCenterId as string] ?? [];
 
-        const startDate = moment(workOrder.startDate);
-        const endDate = moment(workOrder.endDate);
+        return workOrderService.createWorkOrder(workOrder).pipe(
+          map(({ result, error }) => {
+            if (error) {
+              return WorkOrderActions.createWorkOrderFailure({ error });
+            }
 
-        for (const wo of workOrdersForWorkCenter) {
-          const start = moment(wo.data.startDate);
-          const end = moment(wo.data.endDate);
-
-          const overlaps =
-            startDate.isBetween(start, end, undefined, '[]') ||
-            endDate.isBetween(start, end, undefined, '[]') ||
-            start.isBetween(startDate, endDate, undefined, '[]') ||
-            end.isBetween(startDate, endDate, undefined, '[]');
-
-          if (overlaps) {
-            return [
-              WorkOrderActions.createWorkOrderFailure({
-                error: {
-                  message:
-                    'Work order dates overlap with existing work order for the same work center.',
-                  fields: {
-                    startDate: 'Start date overlaps with existing work order.',
-                    endDate: 'End date overlaps with existing work order.',
-                  },
-                },
-              }),
-            ];
-          }
-        }
-
-        const newWorkOrder: WorkOrderDocument = {
-          docId: `wo-${Math.floor(Math.random() * 10000)}`,
-          docType: 'workOrder',
-          data: {
-            name: workOrder.title,
-            startDate: getDateAsISOString(workOrder.startDate),
-            endDate: getDateAsISOString(workOrder.endDate),
-            status: workOrder.status,
-            workCenterId: workOrder.workCenterId as string,
-          },
-        };
-
-        return timer(200).pipe(
-          map(() => {
-            const updatedWorkOrders = [...workOrders, newWorkOrder];
+            const updatedWorkOrders = [...workOrders, result!];
 
             return WorkOrderActions.createWorkOrderSuccess({ workOrders: updatedWorkOrders });
           }),

@@ -1,8 +1,6 @@
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { createFeature, createReducer, on } from '@ngrx/store';
-import {
-  WorkCenterActions,
-} from '@common/store/work-centers/work-center.actions';
+import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
 import { NewWorkCenter } from '@common/types/new-work-center.interface';
 
 interface WorkCenterState {

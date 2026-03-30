@@ -53,12 +53,13 @@
 
   <div class="nl-workorders-content">
     <nl-timeline
+      [workCentersMap]="workCentersMap()"
       [workOrdersGroupedByWorkCenter]="workOrdersGroupedByWorkCenter()"
       [timescaleConfig]="timescaleConfig()"
       (createWorkOrder)="onCreateWorkOrder($event)"
       (deleteWorkOrder)="onDeleteWorkOrder($event)"
       (editWorkOrder)="onOpenEditWorkOrderForm($event)"
-      (updateWorkOrder)="onUpdateWorkOrder($event)"
+      (updateWorkOrder)="onUpdateWorkOrderDates($event)"
     >
     </nl-timeline>
   </div>

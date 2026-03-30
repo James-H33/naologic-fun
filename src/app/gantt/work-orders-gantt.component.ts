@@ -26,6 +26,7 @@ import { ButtonModule } from '@common/directives/button/button.module';
 import {
   selectIsCreateWorkCenterFormOpen,
   selectNewWorkCenter,
+  selectWorkCentersMap,
 } from '@common/store/work-centers/work-center.selectors';
 import { CreateWorkCenterComponent } from '@common/components/create-work-center/create-work-center.component';
 import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
@@ -63,6 +64,7 @@ export class WorkOrdersGanttComponent implements OnInit {
     selectWorkOrdersGroupedByWorkCenterForGantt,
   );
 
+  workCentersMap = this.store.selectSignal(selectWorkCentersMap);
   isCreateWorkOrderFormOpen = this.store.selectSignal(selectIsCreateWorkOrderFormOpen);
   isEditWorkOrderFormOpen = this.store.selectSignal(selectIsEditWorkOrderFormOpen);
   isCreateWorkCenterFormOpen = this.store.selectSignal(selectIsCreateWorkCenterFormOpen);
@@ -71,7 +73,7 @@ export class WorkOrdersGanttComponent implements OnInit {
   newWorkCenter = this.store.selectSignal(selectNewWorkCenter);
   editingWorkOrder = this.store.selectSignal(selectEditingWorkOrder);
   newWorkOrderError = this.store.selectSignal(selectNewWorkOrderError);
-  viewId = '123';
+  viewId = 'v1';
 
   TimescaleNames = TimescaleNames;
 
@@ -83,7 +85,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   ngOnInit() {
     this.store.dispatch(GanttActions.loadTimeScaleConfigStart({ viewId: this.viewId }));
-    this.store.dispatch(GanttActions.loadWorkOrdersStart({ viewId: this.viewId }));
+    this.store.dispatch(GanttActions.loadViewDataStart({ viewId: this.viewId }));
   }
 
   onTimescaleFilterOptionSelected(event: { id: string; title: string }): void {
@@ -115,9 +117,9 @@ export class WorkOrdersGanttComponent implements OnInit {
     );
   }
 
-  onUpdateWorkOrder(workOrder: WorkOrderDocument) {
+  onUpdateWorkOrderDates(workOrder: WorkOrderDocument) {
     this.store.dispatch(
-      WorkOrderActions.editWorkOrder({
+      GanttActions.updateWorkOrderDates({
         workOrder,
       }),
     );
@@ -141,8 +143,8 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onWorkOrderCreated(event: { workOrder: NewWorkOrder }) {
     this.store.dispatch(
-      WorkOrderActions.createWorkOrder({
-        workOrder: event.workOrder,
+      GanttActions.createWorkOrder({
+        newWorkOrder: event.workOrder,
       }),
     );
   }

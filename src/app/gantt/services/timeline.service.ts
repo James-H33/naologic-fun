@@ -17,8 +17,8 @@ export class TimelineService {
   timelineBody = signal<HTMLElement>(null!);
   config = signal<TimescaleConfig>(TimescalesConfig[Timescale.Week]);
   dateRange = signal<{ start: Date; end: Date } | null>({
-    start: moment().subtract(1, 'year').startOf('year').toDate(),
-    end: moment().add(1, 'year').endOf('year').toDate(),
+    start: moment().subtract(2, 'year').startOf('year').toDate(),
+    end: moment().add(2, 'year').endOf('year').toDate(),
   });
 
   timelineDates = computed(() => {

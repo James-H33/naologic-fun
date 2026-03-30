@@ -1,9 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavComponent } from './nav/nav.component';
+import { ApplicationActions } from '@common/store/application/application.actions';
 import { Store } from '@ngrx/store';
-import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
-import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
+import { NavComponent } from './nav/nav.component';
 
 @Component({
   selector: 'nl-root',
@@ -16,8 +15,6 @@ export class App implements OnInit {
   private store = inject(Store);
 
   ngOnInit(): void {
-    // Should probablly be done in a resolver or something, but for simplicity just dispatching here for now
-    this.store.dispatch(WorkOrderActions.loadWorkOrders());
-    this.store.dispatch(WorkCenterActions.loadWorkCenters());
+    this.store.dispatch(ApplicationActions.init());
   }
 }

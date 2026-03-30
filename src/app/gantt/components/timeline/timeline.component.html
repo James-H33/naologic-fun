@@ -12,7 +12,7 @@
 
     <div class="sidebar-body">
       @for (wc of workOrdersGroupedByWorkCenterAsArray(); track wc.workCenterId) {
-        <div class="sidebar-row">{{ wc.workCenterId }}</div>
+        <div class="sidebar-row">{{ wc.workCenterName }}</div>
       }
     </div>
   </section>
