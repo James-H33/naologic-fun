@@ -41,25 +41,10 @@ export const workOrderFeature = createFeature({
       };
     }),
 
-    on(WorkOrderActions.setWorkOrderFormOpenState, (state, { open }) => {
+    on(WorkOrderActions.removeWorkOrdersSuccess, (state, { workOrders }) => {
       return {
         ...state,
-        isCreateWorkOrderFormOpen: open,
-      };
-    }),
-
-    on(WorkOrderActions.openCreateWorkOrderForm, (state, { date, workCenterId }) => {
-      return {
-        ...state,
-        isCreateWorkOrderFormOpen: true,
-        newWorkOrder: {
-          title: '',
-          startDate: date,
-          endDate: date,
-          status: 'open',
-          workCenterId: workCenterId,
-        },
-        newWorkOrderError: null,
+        workOrders,
       };
     }),
 
@@ -100,14 +85,6 @@ export const workOrderFeature = createFeature({
       return {
         ...state,
         workOrders: workOrders,
-      };
-    }),
-
-    on(WorkOrderActions.openEditWorkOrderForm, (state, { workOrderId }) => {
-      return {
-        ...state,
-        editingWorkOrderId: workOrderId,
-        editWorkOrderError: null,
       };
     }),
   ),

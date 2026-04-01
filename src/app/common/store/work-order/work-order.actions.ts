@@ -10,15 +10,18 @@ export const WorkOrderActions = createActionGroup({
     loadWorkOrdersSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
     addWorkOrders: props<{ workOrders: WorkOrderDocument[] }>(),
     addWorkOrdersSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
-    setWorkOrderFormOpenState: props<{ open: boolean }>(),
-    openCreateWorkOrderForm: props<{ date: Date; workCenterId: string }>(),
-    openEditWorkOrderForm: props<{ workOrderId: string | null }>(),
+
+    removeWorkOrders: props<{ workOrderIds: string[] }>(),
+    removeWorkOrdersSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
+
     createWorkOrder: props<{ workOrder: NewWorkOrder }>(),
     createWorkOrderSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
     createWorkOrderFailure: props<{ error: FormError }>(),
+
     editWorkOrder: props<{ workOrder: WorkOrderDocument }>(),
     editWorkOrderSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
     editWorkOrderFailure: props<{ error: FormError }>(),
+
     deleteWorkOrder: props<{ workOrderId: string }>(),
     deleteWorkOrderSuccess: props<{ workOrders: WorkOrderDocument[] }>(),
   },

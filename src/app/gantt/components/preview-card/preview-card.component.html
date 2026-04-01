@@ -1,0 +1,11 @@
+<div
+  #workorderPreviewCard
+  class="nl-workorder-preview-card"
+  [style.width.px]="previewCardStyles().width"
+  [style.left.px]="previewCardStyles().left"
+  [style.top.px]="previewCardStyles().top"
+  [style.display]="previewCardStyles().display"
+  (click)="createWorkorder.emit($event)"
+  role="button"
+  tabindex="0"
+></div>

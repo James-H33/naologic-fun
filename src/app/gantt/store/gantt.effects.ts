@@ -1,4 +1,6 @@
 import { inject } from '@angular/core';
+import { WorkCenterAPIService } from '@common/services/api/work-center-api.service';
+import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
 import { WorkOrderService } from '@common/services/work-order.service';
 import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
 import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
@@ -9,8 +11,6 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { combineLatest, map, switchMap, timer } from 'rxjs';
 import { GanttService } from '../services/gantt.service';
 import { GanttActions } from './gantt.actions';
-import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
-import { WorkCenterAPIService } from '@common/services/api/work-center-api.service';
 
 export const loadWorkorders$ = createEffect(
   (
@@ -95,7 +95,7 @@ export const createWorkOrder$ = createEffect(
         return workOrderService.createWorkOrder(newWorkOrder).pipe(
           switchMap(({ result, error }) => {
             if (error) {
-              return [WorkOrderActions.createWorkOrderFailure({ error })];
+              return [GanttActions.setFormError({ error })];
             }
 
             return [
@@ -103,9 +103,7 @@ export const createWorkOrder$ = createEffect(
                 workOrderId: result!.docId,
                 workCenterId: newWorkOrder.workCenterId as string,
               }),
-              WorkOrderActions.setWorkOrderFormOpenState({
-                open: false,
-              }),
+              GanttActions.closeWorkOrderForm(),
               WorkOrderActions.addWorkOrders({
                 workOrders: [result!],
               }),
@@ -127,9 +125,9 @@ export const updateWorkOrderDates$ = createEffect(
 
         return workOrderService.updateWorkOrder(workOrder).pipe(
           switchMap(({ result, error }) => {
-            // if (error) {
-            //   return [WorkOrderActions.updateWorkOrderFailure({ error })];
-            // }
+            if (error) {
+              return [GanttActions.setFormError({ error })];
+            }
 
             return [
               GanttActions.updateWorkOrderDatesSuccess({
@@ -145,6 +143,86 @@ export const updateWorkOrderDates$ = createEffect(
       }),
     );
   },
+  { functional: true },
+);
+
+export const updateWorkOrder$ = createEffect(
+  (actions$ = inject(Actions), workOrderService = inject(WorkOrderService)) => {
+    return actions$.pipe(
+      ofType(GanttActions.updateWorkOrder),
+      switchMap((action) => {
+        const { workOrder } = action;
+
+        return workOrderService.updateWorkOrder(workOrder).pipe(
+          switchMap(({ result, error }) => {
+            if (error) {
+              return [GanttActions.setFormError({ error })];
+            }
+
+            return [
+              GanttActions.updateWorkOrderSuccess({
+                workOrderId: result!.docId,
+                workCenterId: workOrder.data.workCenterId as string,
+              }),
+              GanttActions.closeEditWorkOrderForm(),
+              WorkOrderActions.addWorkOrders({
+                workOrders: [result!],
+              }),
+            ];
+          }),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const createWorkCenter$ = createEffect(
+  (actions$ = inject(Actions), workCenterAPIService = inject(WorkCenterAPIService)) =>
+    actions$.pipe(
+      ofType(GanttActions.createWorkCenter),
+      switchMap((action) => {
+        const { newWorkCenter } = action;
+
+        return workCenterAPIService.createWorkCenter(newWorkCenter).pipe(
+          switchMap((workCenterDocument) => {
+            return [
+              GanttActions.createWorkCenterSuccess({
+                workCenterId: workCenterDocument.docId,
+              }),
+              GanttActions.closeWorkCenterForm(),
+              WorkCenterActions.addWorkCenters({
+                workCenters: [workCenterDocument],
+              }),
+            ];
+          }),
+        );
+      }),
+    ),
+  { functional: true },
+);
+
+export const deleteWorkOrder$ = createEffect(
+  (actions$ = inject(Actions), workOrderAPIService = inject(WorkOrderAPIService)) =>
+    actions$.pipe(
+      ofType(GanttActions.deleteWorkOrder),
+      switchMap((action) => {
+        const { workOrderId } = action;
+
+        return workOrderAPIService.deleteWorkOrder(workOrderId).pipe(
+          switchMap(() => {
+            return [
+              GanttActions.deleteWorkOrderSuccess({
+                workOrderId,
+              }),
+              WorkOrderActions.removeWorkOrders({
+                workOrderIds: [workOrderId],
+              }),
+            ];
+          }),
+        );
+      }),
+    ),
   { functional: true },
 );
 

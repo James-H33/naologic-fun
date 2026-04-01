@@ -38,4 +38,12 @@ export class WorkOrderAPIService {
       }),
     );
   }
+
+  deleteWorkOrder(workOrderId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${workOrderId}`).pipe(
+      tap(() => {
+        console.log('Work order deleted successfully');
+      }),
+    );
+  }
 }
