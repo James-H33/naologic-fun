@@ -4,13 +4,7 @@ import { WorkCenterDocument } from '@common/types/work-center-document.interface
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { selectWorkCenters } from '../work-centers/work-center.selectors';
 
-export const {
-  selectWorkOrders,
-  selectIsCreateWorkOrderFormOpen,
-  selectNewWorkOrder,
-  selectNewWorkOrderError,
-  selectEditingWorkOrderId,
-} = workOrderFeature;
+export const { selectWorkOrders, selectEditingWorkOrderId } = workOrderFeature;
 
 export const selectWorkOrdersMap = createSelector(selectWorkOrders, (workOrders) => {
   const map: Record<string, WorkOrderDocument> = {};

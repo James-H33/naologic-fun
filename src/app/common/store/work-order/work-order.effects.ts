@@ -1,6 +1,5 @@
 import { inject } from '@angular/core';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
-import { getDateAsISOString } from '@common/utils/get-date-as-iso-string.function';
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
@@ -10,14 +9,12 @@ import { timer } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { WorkOrderActions } from './work-order.actions';
 
+import { WorkOrderService } from '@common/services/work-order.service';
 import {
   selectWorkOrders,
   selectWorkOrdersGroupedByWorkCenter,
   selectWorkOrdersMap,
 } from './work-order.selectors';
-import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
-import { CreateWorkOrderDto } from '@common/types/create-work-order.dto';
-import { WorkOrderService } from '@common/services/work-order.service';
 
 export const loadWorkOrders$ = createEffect(
   (actions$ = inject(Actions)) => {
@@ -181,6 +178,26 @@ export const addWorkOrders$ = createEffect(
             const updatedWorkOrders = [...updatedCurrentWorkOrders, ...netNewWorkOrders];
 
             return WorkOrderActions.addWorkOrdersSuccess({ workOrders: updatedWorkOrders });
+          }),
+        );
+      }),
+    ),
+  { functional: true },
+);
+
+export const removeWorkOrders$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(WorkOrderActions.removeWorkOrders),
+      concatLatestFrom(() => store.select(selectWorkOrders)),
+      switchMap(([{ workOrderIds }, currentWorkOrders]) => {
+        return timer(300).pipe(
+          map(() => {
+            const updatedWorkOrders = currentWorkOrders.filter(
+              (wo) => !workOrderIds.includes(wo.docId),
+            );
+
+            return WorkOrderActions.removeWorkOrdersSuccess({ workOrders: updatedWorkOrders });
           }),
         );
       }),

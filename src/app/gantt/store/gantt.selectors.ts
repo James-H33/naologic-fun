@@ -1,13 +1,28 @@
 import { selectWorkCentersMap } from '@common/store/work-centers/work-center.selectors';
 import { ganttFeature } from './gantt.reducer';
 
-import { selectWorkOrdersMap } from '@common/store/work-order/work-order.selectors';
+import {
+  selectWorkOrders,
+  selectWorkOrdersMap,
+} from '@common/store/work-order/work-order.selectors';
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { createSelector } from '@ngrx/store';
 
-export const { selectViewId, selectTimescaleConfig, selectWorkOrderIds, selectWorkCenterIds } =
-  ganttFeature;
+export const {
+  selectViewId,
+  selectTimescaleConfig,
+  selectWorkOrderIds,
+  selectWorkCenterIds,
+  selectWorkCenterFormOpen,
+  selectWorkOrderFormOpen,
+  selectEditWorkOrderFormOpen,
+  selectEditingWorkOrderId,
+  selectNewWorkOrder,
+  selectNewWorkCenter,
+  selectFormError,
+  selectName,
+} = ganttFeature;
 
 export const selectWorkOrdersForGantt = createSelector(
   selectWorkOrderIds,
@@ -46,6 +61,18 @@ export const selectWorkCentersForGantt = createSelector(
     }
 
     return result;
+  },
+);
+
+export const selectEditingWorkOrder = createSelector(
+  selectWorkOrders,
+  selectEditingWorkOrderId,
+  (workOrders, editingWorkOrderId) => {
+    if (!editingWorkOrderId) {
+      return null;
+    }
+
+    return workOrders.find((wo) => wo.docId === editingWorkOrderId) || null;
   },
 );
 

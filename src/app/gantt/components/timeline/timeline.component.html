@@ -56,17 +56,14 @@
           </div>
         }
 
-        <div
-          #workorderPreviewCard
-          class="nl-workorder-preview-card"
-          [style.width.px]="previewCardWidth()"
-          [style.left.px]="previewCardStyles().left"
-          [style.top.px]="previewCardStyles().top"
-          [style.display]="previewCardStyles().display"
-          (click)="onCreateWorkorder($event)"
-          role="button"
-          tabindex="0"
-        ></div>
+        @for (row of fillerRows(); track i; let i = $index) {
+          <div class="grid-row" (mouseenter)="onRowHover(null)"></div>
+        }
+
+        <nl-preview-card
+          [previewCardStyles]="previewCardStyles()"
+          (createWorkorder)="onCreateWorkorder($event)"
+        ></nl-preview-card>
       </div>
     </div>
   </section>

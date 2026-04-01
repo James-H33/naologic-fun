@@ -7,10 +7,11 @@ export const WorkCenterActions = createActionGroup({
   events: {
     loadWorkCenters: emptyProps(),
     loadWorkCentersSuccess: props<{ workCenters: WorkCenterDocument[] }>(),
+
     createWorkCenter: props<{ workCenter: NewWorkCenter }>(),
     createWorkCenterSuccess: props<{ workCenters: WorkCenterDocument[] }>(),
+
     addWorkCenters: props<{ workCenters: WorkCenterDocument[] }>(),
     addWorkCentersSuccess: props<{ workCenters: WorkCenterDocument[] }>(),
-    toggleCreateWorkCenterForm: props<{ open: boolean }>(),
   },
 });

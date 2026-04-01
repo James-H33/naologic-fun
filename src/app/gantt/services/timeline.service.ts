@@ -1,16 +1,21 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
 import moment from 'moment';
+import { fromEvent } from 'rxjs';
 import { Subject } from 'rxjs/internal/Subject';
 
 @Injectable()
 export class TimelineService {
+  private destroyRef = inject(DestroyRef);
+
   mouseMove$ = new Subject<MouseEvent>();
   mouseLeave$ = new Subject<MouseEvent>();
   mouseDown$ = new Subject<MouseEvent>();
   mouseUp$ = new Subject<MouseEvent>();
   keydown$ = new Subject<KeyboardEvent>();
   keyup$ = new Subject<KeyboardEvent>();
+  windowResize$ = new Subject<Event>();
 
   initialized$ = signal(false);
   timelineContainer = signal<HTMLElement>(null!);
@@ -42,6 +47,12 @@ export class TimelineService {
     this.timelineBody.set(body);
     this.config.set(config);
     this.initialized$.set(true);
+
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        this.windowResize$.next(event);
+      });
   }
 
   getRelativePositionFromEvent(event: MouseEvent) {

@@ -34,13 +34,14 @@ import {
 import { Timescale, TimescaleConfig, TimescalesConfig } from '../../../common/types/timescales';
 import { TimelineService } from '../../services/timeline.service';
 import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
+import { PreviewCardComponent } from '../preview-card/preview-card.component';
 
 @Component({
   selector: 'nl-timeline',
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TimelineRowComponent, CdkScrollableModule],
+  imports: [CommonModule, TimelineRowComponent, CdkScrollableModule, PreviewCardComponent],
   providers: [TimelineService],
 })
 export class TimelineComponent implements AfterViewInit {
@@ -60,6 +61,8 @@ export class TimelineComponent implements AfterViewInit {
   editWorkOrder = output<WorkOrderDocument['docId']>();
   updateWorkOrder = output<WorkOrderDocument>();
 
+  timelineService = inject(TimelineService);
+
   workOrdersGroupedByWorkCenterAsArray = computed(() => {
     const workOrdersGroupedByWorkCenter = this.workOrdersGroupedByWorkCenter() || {};
     const workCentersMap = this.workCentersMap() || {};
@@ -71,7 +74,20 @@ export class TimelineComponent implements AfterViewInit {
     }));
   });
 
-  timelineService = inject(TimelineService);
+  windowResize$ = toSignal(this.timelineService.windowResize$);
+
+  fillerRows = computed(() => {
+    this.windowResize$();
+    const currentRowsCount = this.workOrdersGroupedByWorkCenterAsArray().length;
+    const containerRect = this.timelineContainer()?.nativeElement.getBoundingClientRect();
+    const timelineBottom = currentRowsCount * this.rowHeight + (containerRect?.top ?? 0);
+    const windowHeight = window.innerHeight;
+    const remainingHeight = containerRect ? windowHeight - timelineBottom : 0;
+    const rowsNeededToFill = Math.ceil(remainingHeight / this.rowHeight) - 2;
+    const rows = Array(rowsNeededToFill > 0 ? rowsNeededToFill : 0).fill(0);
+
+    return rows;
+  });
 
   timelineInit$ = toObservable(this.timelineService.initialized$);
 
@@ -151,7 +167,13 @@ export class TimelineComponent implements AfterViewInit {
     return config.colWidth / this.getScaleDivider(config.scale);
   });
 
-  previewCardStyles = signal<{ top: number; left: number; display: string }>({
+  previewCardStyles = signal<{
+    top: number;
+    left: number;
+    display: 'block' | 'none';
+    width: number;
+  }>({
+    width: 0,
     top: 0,
     left: 0,
     display: 'none',
@@ -197,12 +219,11 @@ export class TimelineComponent implements AfterViewInit {
         take(1),
       )
       .subscribe(() => {
-        // Scroll to today
         this.scrollToDate(moment().toDate());
       });
   }
 
-  onRowHover(workcenterId: string): void {
+  onRowHover(workcenterId: string | null): void {
     this.workCenterHovered = workcenterId;
   }
 
@@ -230,7 +251,7 @@ export class TimelineComponent implements AfterViewInit {
     const top = rowNumber * this.rowHeight + padding;
     const left = relativeX - previewCardWidth / 2;
 
-    this.previewCardStyles.set({ left, top, display: 'block' });
+    this.previewCardStyles.set({ left, top, display: 'block', width: previewCardWidth });
   }
 
   getScaleDivider(scale: Timescale): number {
@@ -245,7 +266,7 @@ export class TimelineComponent implements AfterViewInit {
   }
 
   removeCreateWorkorderPreview(): void {
-    this.previewCardStyles.set({ left: 0, top: 0, display: 'none' });
+    this.previewCardStyles.set({ left: 0, top: 0, display: 'none', width: 0 });
   }
 
   onMouseMoveInGrid(event: MouseEvent): void {

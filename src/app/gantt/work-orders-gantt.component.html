@@ -43,7 +43,7 @@
         nlButtonVariant="primary"
         nlButtonSize="small"
         class="nl-workorders-action-button"
-        (click)="onShowCreateWorkCenter(true)"
+        (click)="openCreateWorkCenterForm()"
       >
         <nl-icon icon="plus"></nl-icon>
         <span>Create Work Center</span>
@@ -58,7 +58,7 @@
       [timescaleConfig]="timescaleConfig()"
       (createWorkOrder)="onCreateWorkOrder($event)"
       (deleteWorkOrder)="onDeleteWorkOrder($event)"
-      (editWorkOrder)="onOpenEditWorkOrderForm($event)"
+      (editWorkOrder)="openEditWorkOrderForm($event)"
       (updateWorkOrder)="onUpdateWorkOrderDates($event)"
     >
     </nl-timeline>
@@ -69,8 +69,8 @@
   <nl-create-work-order
     [open]="isCreateWorkOrderFormOpen()"
     [workOrder]="newWorkOrder()"
-    [workOrderError]="newWorkOrderError()"
-    (canceled)="onShowCreateWorkOrderForm(false)"
+    [workOrderError]="formError()"
+    (canceled)="closeCreateWorkOrderForm()"
     (created)="onWorkOrderCreated($event)"
   >
   </nl-create-work-order>
@@ -80,8 +80,8 @@
   <nl-edit-work-order
     [open]="isEditWorkOrderFormOpen()"
     [workOrder]="editingWorkOrder()"
-    [workOrderError]="newWorkOrderError()"
-    (canceled)="onOpenEditWorkOrderForm(null)"
+    [workOrderError]="formError()"
+    (canceled)="closeEditWorkOrderForm()"
     (updated)="onEditWorkOrder($event)"
   >
   </nl-edit-work-order>
@@ -91,7 +91,8 @@
   <nl-create-work-center
     [open]="isCreateWorkCenterFormOpen()"
     [workCenter]="newWorkCenter()"
-    (canceled)="onShowCreateWorkCenter(false)"
+    [workCenterError]="formError()"
+    (canceled)="closeCreateWorkCenterForm()"
     (created)="onCreateWorkCenter($event)"
   >
   </nl-create-work-center>

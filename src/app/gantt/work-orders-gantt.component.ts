@@ -1,37 +1,34 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, viewChild } from '@angular/core';
+import { CreateWorkOrderComponent } from '@common/components/create-work-order/create-work-order.component';
 import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
 import { DropdownMenuComponent } from '@common/components/dropdown-menu/dropdown-menu';
 import { IconComponent } from '@common/components/icon/icon.component';
+import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
 import { Timescale, TimescaleNames, TimescalesConfig } from '@common/types/timescales';
 import { Store } from '@ngrx/store';
-import { CreateWorkOrderComponent } from '@common/components/create-work-order/create-work-order.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
-import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
 
 import { GanttActions } from './store/gantt.actions';
 
-import {
-  selectEditingWorkOrder,
-  selectIsCreateWorkOrderFormOpen,
-  selectIsEditWorkOrderFormOpen,
-  selectNewWorkOrder,
-  selectNewWorkOrderError,
-} from '@common/store/work-order/work-order.selectors';
-import { selectTimescaleConfig } from './store/gantt.selectors';
-import { NewWorkOrder } from '@common/types/new-work-order.interface';
-import { EditWorkOrderComponent } from '@common/components/edit-work-order/edit-work-order.component';
-import { WorkOrderDocument } from '@common/types/work-order-document.interface';
-import { ButtonModule } from '@common/directives/button/button.module';
-import {
-  selectIsCreateWorkCenterFormOpen,
-  selectNewWorkCenter,
-  selectWorkCentersMap,
-} from '@common/store/work-centers/work-center.selectors';
 import { CreateWorkCenterComponent } from '@common/components/create-work-center/create-work-center.component';
-import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
+import { EditWorkOrderComponent } from '@common/components/edit-work-order/edit-work-order.component';
+import { ButtonModule } from '@common/directives/button/button.module';
+import { selectWorkCentersMap } from '@common/store/work-centers/work-center.selectors';
 import { NewWorkCenter } from '@common/types/new-work-center.interface';
+import { NewWorkOrder } from '@common/types/new-work-order.interface';
+import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { GanttStoreModule } from './store/gantt-store.module';
+import {
+  selectEditWorkOrderFormOpen,
+  selectFormError,
+  selectNewWorkOrder,
+  selectTimescaleConfig,
+  selectWorkCenterFormOpen,
+  selectNewWorkCenter,
+  selectWorkOrderFormOpen,
+  selectEditingWorkOrder,
+} from './store/gantt.selectors';
 
 import { selectWorkOrdersGroupedByWorkCenterForGantt } from './store/gantt.selectors';
 
@@ -64,15 +61,19 @@ export class WorkOrdersGanttComponent implements OnInit {
     selectWorkOrdersGroupedByWorkCenterForGantt,
   );
 
-  workCentersMap = this.store.selectSignal(selectWorkCentersMap);
-  isCreateWorkOrderFormOpen = this.store.selectSignal(selectIsCreateWorkOrderFormOpen);
-  isEditWorkOrderFormOpen = this.store.selectSignal(selectIsEditWorkOrderFormOpen);
-  isCreateWorkCenterFormOpen = this.store.selectSignal(selectIsCreateWorkCenterFormOpen);
-  timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
+  // Form State
+  isCreateWorkOrderFormOpen = this.store.selectSignal(selectWorkOrderFormOpen);
+  isEditWorkOrderFormOpen = this.store.selectSignal(selectEditWorkOrderFormOpen);
+  isCreateWorkCenterFormOpen = this.store.selectSignal(selectWorkCenterFormOpen);
+
   newWorkOrder = this.store.selectSignal(selectNewWorkOrder);
   newWorkCenter = this.store.selectSignal(selectNewWorkCenter);
   editingWorkOrder = this.store.selectSignal(selectEditingWorkOrder);
-  newWorkOrderError = this.store.selectSignal(selectNewWorkOrderError);
+
+  formError = this.store.selectSignal(selectFormError);
+
+  workCentersMap = this.store.selectSignal(selectWorkCentersMap);
+  timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
   viewId = 'v1';
 
   TimescaleNames = TimescaleNames;
@@ -102,7 +103,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onCreateWorkOrder(event: { date: Date; workCenterId: string }) {
     this.store.dispatch(
-      WorkOrderActions.openCreateWorkOrderForm({
+      GanttActions.openWorkOrderForm({
         date: event.date,
         workCenterId: event.workCenterId,
       }),
@@ -111,7 +112,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onDeleteWorkOrder(workOrderId: string) {
     this.store.dispatch(
-      WorkOrderActions.deleteWorkOrder({
+      GanttActions.deleteWorkOrder({
         workOrderId,
       }),
     );
@@ -125,9 +126,9 @@ export class WorkOrdersGanttComponent implements OnInit {
     );
   }
 
-  onOpenEditWorkOrderForm(workOrderId: string | null) {
+  openEditWorkOrderForm(workOrderId: string | null) {
     this.store.dispatch(
-      WorkOrderActions.openEditWorkOrderForm({
+      GanttActions.openEditWorkOrderForm({
         workOrderId,
       }),
     );
@@ -135,7 +136,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   onEditWorkOrder(update: { workOrder: WorkOrderDocument }) {
     this.store.dispatch(
-      WorkOrderActions.editWorkOrder({
+      GanttActions.updateWorkOrder({
         workOrder: update.workOrder,
       }),
     );
@@ -150,26 +151,22 @@ export class WorkOrdersGanttComponent implements OnInit {
   }
 
   onCreateWorkCenter(event: { workCenter: NewWorkCenter }) {
-    this.store.dispatch(WorkCenterActions.createWorkCenter({ workCenter: event.workCenter }));
+    this.store.dispatch(GanttActions.createWorkCenter({ newWorkCenter: event.workCenter }));
   }
 
-  onShowCreateWorkOrderForm(open: boolean) {
-    const isOpen = this.isCreateWorkOrderFormOpen();
-
-    if (isOpen === open) {
-      this.store.dispatch(WorkOrderActions.setWorkOrderFormOpenState({ open: false }));
-    } else {
-      this.store.dispatch(WorkOrderActions.setWorkOrderFormOpenState({ open }));
-    }
+  closeCreateWorkOrderForm() {
+    this.store.dispatch(GanttActions.closeWorkOrderForm());
   }
 
-  onShowCreateWorkCenter(open: boolean) {
-    const isOpen = this.isCreateWorkCenterFormOpen();
+  closeEditWorkOrderForm() {
+    this.store.dispatch(GanttActions.closeEditWorkOrderForm());
+  }
 
-    if (isOpen === open) {
-      this.store.dispatch(WorkCenterActions.toggleCreateWorkCenterForm({ open: false }));
-    } else {
-      this.store.dispatch(WorkCenterActions.toggleCreateWorkCenterForm({ open }));
-    }
+  closeCreateWorkCenterForm() {
+    this.store.dispatch(GanttActions.closeWorkCenterForm());
+  }
+
+  openCreateWorkCenterForm() {
+    this.store.dispatch(GanttActions.openWorkCenterForm());
   }
 }

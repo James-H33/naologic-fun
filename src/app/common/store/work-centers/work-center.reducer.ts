@@ -36,13 +36,6 @@ export const workCenterFeature = createFeature({
       };
     }),
 
-    on(WorkCenterActions.toggleCreateWorkCenterForm, (state, { open }) => {
-      return {
-        ...state,
-        isCreateWorkCenterFormOpen: open,
-      };
-    }),
-
     on(WorkCenterActions.addWorkCentersSuccess, (state, { workCenters }) => {
       return {
         ...state,
