@@ -18,8 +18,9 @@ import { TooltipModule } from '@common/directives/tooltip/tooltip.module';
 import { DropdownListItem } from '@common/types/dropdown-list-item.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { WorkOrderStatusColors } from '@common/types/work-order-status-colors';
-import { filter, map, merge, pairwise, take, takeUntil, tap } from 'rxjs';
-import { TimelineService } from '../../services/timeline.service';
+import moment from 'moment';
+import { filter, map, merge, pairwise, skipUntil, take, takeUntil, tap, timer } from 'rxjs';
+import { TimelineService } from '@gantt/services/timeline.service';
 
 @Component({
   selector: 'nl-timeline-row',
@@ -74,30 +75,38 @@ export class TimelineRowComponent {
 
   constructor() {
     effect(() => {
-      const timelineService = this.timelineService;
-      const timelineDates = this.dates();
-      const map: Record<string, { left: number; width: number }> = {};
-
-      for (const workOrder of this.workOrders()) {
-        const { left, width } = timelineService.calculateWorkOrderPosition(
-          workOrder.data,
-          timelineDates,
-        );
-        map[workOrder.docId] = { left, width };
-      }
-
-      this.workOrderPositionMap.set(map);
+      this.configureWorkOrderPositionMapOnChange(this.dates(), this.workOrders());
     });
 
     effect(() => {
-      const workOrderBeingDragged = this.draggedWorkOrder();
-
-      if (workOrderBeingDragged) {
-        this.workOrderDragged.emit(workOrderBeingDragged);
-      } else {
-        this.workOrderDragged.emit(null);
-      }
+      this.updateWorkOrderBeingDragged(this.draggedWorkOrder());
     });
+  }
+
+  updateWorkOrderBeingDragged(workOrder: WorkOrderDocument | null): void {
+    if (workOrder) {
+      this.workOrderDragged.emit(workOrder);
+    } else {
+      this.workOrderDragged.emit(null);
+    }
+  }
+
+  configureWorkOrderPositionMapOnChange(
+    timelineDates: { label: string; date: Date }[],
+    workOrders: WorkOrderDocument[],
+  ): void {
+    const timelineService = this.timelineService;
+    const map: Record<string, { left: number; width: number }> = {};
+
+    for (const workOrder of workOrders) {
+      const { left, width } = timelineService.calculateWorkOrderPosition(
+        workOrder.data,
+        timelineDates,
+      );
+      map[workOrder.docId] = { left, width };
+    }
+
+    this.workOrderPositionMap.set(map);
   }
 
   onWorkOrderHover(workOrder: WorkOrderDocument | null): void {
@@ -122,68 +131,132 @@ export class TimelineRowComponent {
     }
   }
 
-  onDragHandleMouseDown(
-    event: MouseEvent,
-    workOrder: WorkOrderDocument,
-    handle: 'left' | 'right',
-  ): void {
-    let lastEmittedDate: Date | null = null;
+  onMouseDownWorkOrder(event: MouseEvent, workOrder: WorkOrderDocument): void {
+    const path = event.composedPath() as HTMLElement[];
+    const isDraggingOnHandle = path.some((el) => el.classList?.contains('nl-timeline-item-handle'));
+
+    if (isDraggingOnHandle) {
+      return;
+    }
+
+    this.handleDragOfBothDates(workOrder);
+  }
+
+  handleDragOfBothDates(workOrder: WorkOrderDocument): void {
+    let startDate: Date = new Date(workOrder.data.startDate as string);
+    let endDate: Date = new Date(workOrder.data.endDate as string);
+    const isDraggingDelay$ = timer(200).pipe(takeUntil(this.mouseUp$));
+    const mouseUp$ = this.mouseUp$;
+
     this.draggedWorkOrder.set(workOrder);
 
-    this.mouseUp$
-      .pipe(
-        tap(() => {
-          const updatedWorkOrder = {
-            ...workOrder,
-            data: {
-              ...workOrder.data,
-              [handle === 'left' ? 'startDate' : 'endDate']: lastEmittedDate
-                ? lastEmittedDate.toISOString()
-                : workOrder.data[handle === 'left' ? 'startDate' : 'endDate'],
-            },
-          };
+    const saveOnDragEnd$ = mouseUp$.pipe(
+      skipUntil(isDraggingDelay$),
+      tap(() => {
+        const updatedWorkOrder = {
+          ...workOrder,
+          data: {
+            ...workOrder.data,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+          },
+        };
 
-          this.updateWorkOrder.emit(updatedWorkOrder);
-          this.draggedWorkOrder.set(null);
-        }),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
+        this.updateWorkOrder.emit(updatedWorkOrder);
+        this.draggedWorkOrder.set(null);
+      }),
+      take(1),
+      takeUntilDestroyed(this.destroyRef),
+    );
 
-    this.mouseMoveEvent$
-      .pipe(
-        map((moveEvent) => ({ moveEvent, workOrder, handle })),
-        map(({ moveEvent, workOrder, handle }) => {
-          const newDate = this.timelineService.getDateBasedOnClickPosition(moveEvent);
-          return { moveEvent, workOrder, handle, newDate };
-        }),
-        pairwise(),
-        filter(([prev, curr]) => {
-          const prevDate = prev.newDate.toISOString().split('T')[0];
-          const currDate = curr.newDate.toISOString().split('T')[0];
+    const updateWorkOrderOnMouseMove$ = this.mouseMoveEvent$.pipe(
+      map((moveEvent) => {
+        const newDate = this.timelineService.getDateBasedOnClickPosition(moveEvent);
 
-          return prevDate !== currDate;
-        }),
-        tap(([, curr]) => {
-          const positionMap = this.workOrderPositionMap();
-          const timelineDates = this.dates();
-          const { workOrder, newDate, handle } = curr;
-          const field = handle === 'left' ? 'startDate' : 'endDate';
-          const { left, width } = this.timelineService.calculateWorkOrderPosition(
-            { ...workOrder.data, [field]: newDate.toISOString() },
-            timelineDates,
-          );
+        return { moveEvent, workOrder, newDate };
+      }),
+      pairwise(),
+      filter(([prev, curr]) => this.isNewDate(prev.newDate, curr.newDate)),
+      tap(([prev, curr]) => {
+        const timeDiff = (prev.newDate.getTime() - curr.newDate.getTime()) * -1;
+        startDate = moment(startDate).add(timeDiff, 'ms').startOf('day').toDate();
+        endDate = moment(endDate).add(timeDiff, 'ms').startOf('day').toDate();
 
-          lastEmittedDate = newDate;
+        const positionMap = this.workOrderPositionMap();
+        const timelineDates = this.dates();
 
-          positionMap[workOrder.docId] = { left, width };
+        const { left, width } = this.timelineService.calculateWorkOrderPosition(
+          { startDate: startDate?.toISOString(), endDate: endDate?.toISOString() },
+          timelineDates,
+        );
+        positionMap[workOrder.docId] = { left, width };
+        this.workOrderPositionMap.set({ ...positionMap });
+      }),
+      takeUntilDestroyed(this.destroyRef),
+      takeUntil(this.mouseUp$),
+    );
 
-          this.workOrderPositionMap.set({ ...positionMap });
-        }),
-        takeUntilDestroyed(this.destroyRef),
-        takeUntil(this.mouseUp$),
-      )
-      .subscribe();
+    saveOnDragEnd$.subscribe();
+    updateWorkOrderOnMouseMove$.subscribe();
+  }
+
+  onDragHandleMouseDown(workOrder: WorkOrderDocument, handle: 'left' | 'right'): void {
+    let lastEmittedDate: Date | null = null;
+    const field = handle === 'left' ? 'startDate' : 'endDate';
+    this.draggedWorkOrder.set(workOrder);
+
+    const saveOnDragEnd$ = this.mouseUp$.pipe(
+      tap(() => {
+        const updatedWorkOrder = {
+          ...workOrder,
+          data: {
+            ...workOrder.data,
+            [field]: lastEmittedDate ? lastEmittedDate.toISOString() : workOrder.data[field],
+          },
+        };
+
+        this.updateWorkOrder.emit(updatedWorkOrder);
+        this.draggedWorkOrder.set(null);
+      }),
+      take(1),
+      takeUntilDestroyed(this.destroyRef),
+    );
+
+    const updateWorkOrderOnMouseMove$ = this.mouseMoveEvent$.pipe(
+      map((moveEvent) => {
+        const newDate = this.timelineService.getDateBasedOnClickPosition(moveEvent);
+        return { moveEvent, newDate };
+      }),
+      pairwise(),
+      filter(([prev, curr]) => {
+        return this.isNewDate(prev.newDate, curr.newDate);
+      }),
+      tap(([, curr]) => {
+        const positionMap = this.workOrderPositionMap();
+        const { newDate } = curr;
+        const { left, width } = this.timelineService.calculateWorkOrderPosition(
+          { ...workOrder.data, [field]: newDate.toISOString() },
+          this.dates(),
+        );
+
+        lastEmittedDate = newDate;
+
+        positionMap[workOrder.docId] = { left, width };
+
+        this.workOrderPositionMap.set({ ...positionMap });
+      }),
+      takeUntilDestroyed(this.destroyRef),
+      takeUntil(this.mouseUp$),
+    );
+
+    saveOnDragEnd$.subscribe();
+    updateWorkOrderOnMouseMove$.subscribe();
+  }
+
+  private isNewDate(prev: Date, curr: Date): boolean {
+    const prevDate = prev.toISOString().split('T')[0];
+    const currDate = curr.toISOString().split('T')[0];
+
+    return prevDate !== currDate;
   }
 }

@@ -10,6 +10,7 @@
     [class.mouse-down]="(isMouseDown$ | async) && draggedWorkOrder()?.docId === workOrder.docId"
     (mouseenter)="onWorkOrderHover(workOrder)"
     (mouseleave)="onWorkOrderHover(null)"
+    (mousedown)="onMouseDownWorkOrder($event, workOrder)"
     nlTooltip
     [nlTooltipDelay]="600"
     [nlTooltipTemplate]="tooltipTemplate"
@@ -37,11 +38,11 @@
 
     <span
       class="nl-timeline-item-handle nl-timeline-item-handle--left"
-      (mousedown)="onDragHandleMouseDown($event, workOrder, 'left')"
+      (mousedown)="onDragHandleMouseDown(workOrder, 'left')"
     ></span>
     <span
       class="nl-timeline-item-handle nl-timeline-item-handle--right"
-      (mousedown)="onDragHandleMouseDown($event, workOrder, 'right')"
+      (mousedown)="onDragHandleMouseDown(workOrder, 'right')"
     ></span>
   </div>
 }

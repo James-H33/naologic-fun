@@ -31,8 +31,8 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { Timescale, TimescaleConfig, TimescalesConfig } from '../../../common/types/timescales';
-import { TimelineService } from '../../services/timeline.service';
+import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
+import { TimelineService } from '@gantt/services/timeline.service';
 import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
 import { PreviewCardComponent } from '../preview-card/preview-card.component';
 
