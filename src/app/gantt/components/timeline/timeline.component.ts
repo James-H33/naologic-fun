@@ -93,6 +93,7 @@ export class TimelineComponent implements AfterViewInit {
 
   workOrderBeingDragged = signal<WorkOrderDocument | null>(null);
   mouseMove$ = this.timelineService.mouseMove$;
+  mouseEnter$ = this.timelineService.mouseEnter$;
   mouseLeave$ = this.timelineService.mouseLeave$;
   mouseDown$ = this.timelineService.mouseDown$;
   mouseUp$ = this.timelineService.mouseUp$;
@@ -108,6 +109,12 @@ export class TimelineComponent implements AfterViewInit {
       map(() => false),
     ),
   ).pipe(takeUntilDestroyed());
+
+  isMouseWithinTimeline$ = toSignal(
+    merge(this.mouseEnter$.pipe(map(() => true)), this.mouseLeave$.pipe(map(() => false))).pipe(
+      takeUntilDestroyed(),
+    ),
+  );
 
   isMouseDown$ = merge(
     this.mouseDown$.pipe(map(() => true)),
@@ -132,6 +139,12 @@ export class TimelineComponent implements AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    const isInTimeline = this.isMouseWithinTimeline$();
+
+    if (event.key === ' ' && isInTimeline) {
+      event.preventDefault(); // Prevent page from scrolling when space is pressed
+    }
+
     this.timelineService.keydown$.next(event);
   }
 
@@ -148,6 +161,11 @@ export class TimelineComponent implements AfterViewInit {
   @HostListener('mouseup', ['$event'])
   onMouseUp(event: MouseEvent) {
     this.timelineService.mouseUp$.next(event);
+  }
+
+  @HostListener('mouseenter', ['$event'])
+  onMouseEnter(event: MouseEvent) {
+    this.timelineService.mouseEnter$.next(event);
   }
 
   @HostListener('mouseleave', ['$event'])

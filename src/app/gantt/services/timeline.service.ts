@@ -10,6 +10,7 @@ export class TimelineService {
   private destroyRef = inject(DestroyRef);
 
   mouseMove$ = new Subject<MouseEvent>();
+  mouseEnter$ = new Subject<MouseEvent>();
   mouseLeave$ = new Subject<MouseEvent>();
   mouseDown$ = new Subject<MouseEvent>();
   mouseUp$ = new Subject<MouseEvent>();

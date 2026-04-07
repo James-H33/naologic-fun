@@ -38,6 +38,10 @@
   font-size: 14px;
   font-weight: 500;
   border-bottom: var(--border);
+
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timeline {

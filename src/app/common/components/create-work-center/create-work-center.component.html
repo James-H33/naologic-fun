@@ -22,7 +22,11 @@
       nlInput
       id="company"
       type="text"
+      nlAutoFocus
+      [nlAutoFocusDelay]="350"
+      [nlAutoFocusEnabled]="!!open()"
       [formField]="form.name"
+      (keydown.enter)="create()"
       placeholder="Amazon Fulfillment Center, etc..."
     />
   </div>
