@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
+import { AutoFocusDirective } from '@common/directives/auto-focus/auto-focus.directive';
 import { ButtonModule } from '@common/directives/button/button.module';
 import { InputDirective } from '@common/directives/input/input.directive';
 import { FormError } from '@common/types/form-error.interface';
@@ -22,7 +23,7 @@ import { NgbCalendar, NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap/date
   templateUrl: './create-work-center.component.html',
   styleUrls: ['./create-work-center.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, InputDirective, FormsModule, FormField],
+  imports: [ButtonModule, InputDirective, FormsModule, FormField, AutoFocusDirective],
 })
 export class CreateWorkCenterComponent {
   open = input<boolean>();
