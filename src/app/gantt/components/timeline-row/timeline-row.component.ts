@@ -1,26 +1,33 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import {
+  asNativeElements,
   ChangeDetectionStrategy,
   Component,
+  computed,
+  contentChild,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   output,
   signal,
+  viewChild,
   viewChildren,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
+import { DropdownMenuComponent } from '@common/components/dropdown-menu/dropdown-menu';
 import { StatusComponent } from '@common/components/status/status.component';
 import { DropdownDirective } from '@common/directives/dropdown/dropdown.directive';
 import { TooltipModule } from '@common/directives/tooltip/tooltip.module';
 import { DropdownListItem } from '@common/types/dropdown-list-item.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { WorkOrderStatusColors } from '@common/types/work-order-status-colors';
+import { TimelineService } from '@gantt/services/timeline.service';
 import moment from 'moment';
 import { filter, map, merge, pairwise, skipUntil, take, takeUntil, tap, timer } from 'rxjs';
-import { TimelineService } from '@gantt/services/timeline.service';
+import { GanttTimelineBarComponent } from '../timeline-bar/gantt-timeline-bar.component';
 
 @Component({
   selector: 'nl-timeline-row',
@@ -34,6 +41,8 @@ import { TimelineService } from '@gantt/services/timeline.service';
     DropdownDirective,
     DropdownListComponent,
     AsyncPipe,
+    DropdownMenuComponent,
+    GanttTimelineBarComponent,
   ],
 })
 export class TimelineRowComponent {
@@ -45,10 +54,13 @@ export class TimelineRowComponent {
   dropdownRef = viewChildren(DropdownDirective);
   activeDropdownWorkorder = signal<WorkOrderDocument | null>(null);
   workOrderHovered = output<WorkOrderDocument | null>();
+  elementHovered = output<boolean>();
   deleteWorkOrder = output<string>();
   editWorkOrder = output<string>();
   updateWorkOrder = output<WorkOrderDocument>();
   workOrderDragged = output<WorkOrderDocument | null>();
+
+  hoveredTimelineBarId = signal<string | null>(null);
 
   timelineService = inject(TimelineService);
   destroyRef = inject(DestroyRef);
@@ -57,6 +69,7 @@ export class TimelineRowComponent {
   mouseDown$ = this.timelineService.mouseDown$;
   mouseUp$ = this.timelineService.mouseUp$;
 
+  goToDropDownOpened = signal<boolean>(false);
   draggedWorkOrder = signal<WorkOrderDocument | null>(null);
 
   isMouseDown$ = merge(
@@ -107,6 +120,10 @@ export class TimelineRowComponent {
     }
 
     this.workOrderPositionMap.set(map);
+  }
+
+  onTimelineBarHovered(workOrderId: string | null): void {
+    this.hoveredTimelineBarId.set(workOrderId);
   }
 
   onWorkOrderHover(workOrder: WorkOrderDocument | null): void {

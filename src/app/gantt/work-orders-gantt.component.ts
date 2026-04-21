@@ -4,7 +4,6 @@ import { CreateWorkOrderComponent } from '@common/components/create-work-order/c
 import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
 import { DropdownMenuComponent } from '@common/components/dropdown-menu/dropdown-menu';
 import { IconComponent } from '@common/components/icon/icon.component';
-import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
 import { Timescale, TimescaleNames, TimescalesConfig } from '@common/types/timescales';
 import { Store } from '@ngrx/store';
 import { TimelineComponent } from './components/timeline/timeline.component';
@@ -20,14 +19,14 @@ import { NewWorkOrder } from '@common/types/new-work-order.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
 import { GanttStoreModule } from './store/gantt-store.module';
 import {
+  selectEditingWorkOrder,
   selectEditWorkOrderFormOpen,
   selectFormError,
+  selectNewWorkCenter,
   selectNewWorkOrder,
   selectTimescaleConfig,
   selectWorkCenterFormOpen,
-  selectNewWorkCenter,
   selectWorkOrderFormOpen,
-  selectEditingWorkOrder,
 } from './store/gantt.selectors';
 
 import { selectWorkOrdersGroupedByWorkCenterForGantt } from './store/gantt.selectors';

@@ -47,6 +47,7 @@
               [workOrders]="wc.workOrders"
               [dates]="timelineDates()"
               (workOrderHovered)="onWorkOrderHover($event)"
+              (elementHovered)="elementHovered.set($event)"
               (deleteWorkOrder)="deleteWorkOrder.emit($event)"
               (editWorkOrder)="editWorkOrder.emit($event)"
               (updateWorkOrder)="updateWorkOrder.emit($event)"

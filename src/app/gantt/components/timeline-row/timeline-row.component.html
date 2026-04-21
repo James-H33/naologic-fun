@@ -1,6 +1,7 @@
 @for (workOrder of workOrders(); track workOrder.docId) {
   <div
     class="timeline-item"
+    #workOrder
     [style.--background-color]="
       workOrderStatusColors[workOrder.data.status].backgroundSecondary || 'gray'
     "
@@ -18,6 +19,7 @@
     [nlDropdownTemplate]="dropdownTemplate"
     nlDropdownTriggerType="contextmenu"
     (nlDropdownOpened)="activeDropdownWorkorder.set(workOrder)"
+    [attr.data-workorder-id]="workOrder.docId"
   >
     <div class="timeline-item-content">
       <span class="timeline-item-name">
@@ -45,6 +47,52 @@
       (mousedown)="onDragHandleMouseDown(workOrder, 'right')"
     ></span>
   </div>
+}
+
+@if (workOrders().length) {
+  <span
+    (mousemove)="elementHovered.emit(true)"
+    (mouseleave)="elementHovered.emit(false)"
+    class="nl-timeline-go-to nl-timeline-go-to--left"
+    [attr.data-opened]="goToDropDownOpened()"
+  >
+    <nl-dropdown-menu
+      (opened)="goToDropDownOpened.set(true)"
+      (closed)="goToDropDownOpened.set(false)"
+    >
+      <span class="nl-timeline-go-to__trigger" #goToDropdownTriggerRef contextTrigger>{{
+        workOrders().length
+      }}</span>
+
+      <div contextMenu class="nl-dropdown-menu-default">
+        <div class="nl-timeline-go-to__header">Workorders By Date:</div>
+
+        <nl-gantt-timeline-bar
+          [workOrders]="workOrders()"
+          (hovered)="onTimelineBarHovered($event)"
+        ></nl-gantt-timeline-bar>
+
+        @for (workOrder of workOrders(); track workOrder.docId) {
+          <div
+            class="nl-timeline-go-to-dropdown-item"
+            [class.hovered]="hoveredTimelineBarId() === workOrder.docId"
+          >
+            <div class="nl-timeline-go-to-dropdown-item__left">
+              <span>{{ workOrder.data.name }}</span>
+              <span class="nl-timeline-go-to-dropdown-item__dates"
+                >{{ workOrder.data.startDate | date: 'MMM d' }} -
+                {{ workOrder.data.endDate | date: 'MMM d, yyyy' }}</span
+              >
+            </div>
+
+            <div class="nl-timeline-go-to-dropdown-item__right">
+              <nl-status [status]="workOrder.data.status"></nl-status>
+            </div>
+          </div>
+        }
+      </div>
+    </nl-dropdown-menu>
+  </span>
 }
 
 <ng-template #dropdownTemplate>

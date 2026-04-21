@@ -10,7 +10,6 @@ export const getWorkspaceId = createEffect(
       ofType(ApplicationActions.init),
       map(() => {
         const workspaceId = appService.getWorkspaceIdFromStorage();
-        console.log('Retrieved workspace ID from storage:', workspaceId);
         return ApplicationActions.initSuccess({ workspaceId: workspaceId ?? '' });
       }),
     );

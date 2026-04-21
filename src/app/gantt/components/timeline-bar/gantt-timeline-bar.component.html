@@ -1,0 +1,11 @@
+<div class="nl-gantt-timeline-bar">
+  @for (bar of timelineBars(); track bar.id) {
+    <div
+      class="nl-gantt-timeline-bar__item"
+      [attr.data-id]="bar.id"
+      [style.background-color]="bar.color"
+      (mouseenter)="hovered.emit(bar.id)"
+      (mouseleave)="hovered.emit(null)"
+    ></div>
+  }
+</div>

@@ -13,11 +13,13 @@ import {
   input,
   output,
   signal,
-  viewChild,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
 import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 import { WorkOrderDocument } from '@common/types/work-order-document.interface';
+import { TimelineService } from '@gantt/services/timeline.service';
 import moment from 'moment';
 import {
   combineLatest,
@@ -31,10 +33,8 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
-import { TimelineService } from '@gantt/services/timeline.service';
-import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
 import { PreviewCardComponent } from '../preview-card/preview-card.component';
+import { TimelineRowComponent } from '../timeline-row/timeline-row.component';
 
 @Component({
   selector: 'nl-timeline',
@@ -48,7 +48,6 @@ export class TimelineComponent implements AfterViewInit {
   timelineContainer = viewChild<ElementRef>('timelineContainer');
   timescalesBodyContainer = viewChild<ElementRef>('timescalesBodyContainer');
   workorderPreviewCard = viewChild<ElementRef>('workorderPreviewCard');
-
   timescaleConfig = input<TimescaleConfig>(TimescalesConfig[Timescale.Week]);
 
   workCentersMap = input<Record<WorkCenterDocument['docId'], WorkCenterDocument>>({});
@@ -92,6 +91,7 @@ export class TimelineComponent implements AfterViewInit {
   timelineInit$ = toObservable(this.timelineService.initialized$);
 
   workOrderBeingDragged = signal<WorkOrderDocument | null>(null);
+  elementHovered = signal<boolean>(false);
   mouseMove$ = this.timelineService.mouseMove$;
   mouseEnter$ = this.timelineService.mouseEnter$;
   mouseLeave$ = this.timelineService.mouseLeave$;
@@ -220,8 +220,9 @@ export class TimelineComponent implements AfterViewInit {
     effect(() => {
       const spaceKeyPressed = this.spaceKeyPressed();
       const workOrderDragged = this.workOrderBeingDragged();
+      const elementHovered = this.elementHovered();
 
-      if (spaceKeyPressed || workOrderDragged) {
+      if (spaceKeyPressed || workOrderDragged || elementHovered) {
         this.removeCreateWorkorderPreview();
       }
     });
@@ -364,7 +365,7 @@ export class TimelineComponent implements AfterViewInit {
             curr.event,
           );
 
-          if (this.spaceKeyPressed() || this.workOrderBeingDragged()) {
+          if (this.spaceKeyPressed() || this.workOrderBeingDragged() || this.elementHovered()) {
             this.removeCreateWorkorderPreview();
           } else {
             this.showCreateWorkorderPreview(relativeX, relativeY);
