@@ -105,6 +105,22 @@ export class TimelineService {
     }
   }
 
+  getScrollPosition(): number {
+    return this.timelineContainer()?.scrollLeft ?? 0;
+  }
+
+  getDateAtScrollPosition(position: number | null | undefined = null): Date | null {
+    const scrollPosition = position ?? this.getScrollPosition();
+    const dates = this.timelineDates();
+    const scale = this.config()?.scale;
+    const widthOfDay = this.getWidthOfDayBasedOnScale(scale);
+    const daysFromTimelineStart = scrollPosition / widthOfDay;
+    const timelineStartDate = moment(dates[0].date);
+    const targetDate = timelineStartDate.add(daysFromTimelineStart, 'days');
+
+    return targetDate.toDate();
+  }
+
   getDateBasedOnClickPosition(event: MouseEvent): Date {
     const { relativeX } = this.getRelativePositionFromEvent(event);
     const colWidth = this.config()?.colWidth;

@@ -79,12 +79,99 @@
   font-weight: 400;
 }
 
-
 .tooltip-separator {
   display: inline-block;
   padding-inline: 4px;
 }
 
+.nl-timeline-go-to {
+  position: sticky;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  opacity: 0.3;
+  margin-top: 12px;
+  transition: all 0.2s;
+  border: 1px solid rgba(0, 0, 0, 1);
+  z-index: 1;
+
+  &:before,
+  &:after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 32px;
+    background: transparent;
+    z-index: -1;
+  }
+
+  &::before {
+    left: -10px;
+  }
+
+  &:after {
+    right: -10px;
+  }
+
+  &:hover, &[data-opened='true'] {
+    cursor: pointer;
+    opacity: 1;
+    background: #fff;
+  }
+
+  &--left {
+    left: 16px;
+  }
+}
+
+.nl-timeline-go-to__header {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--nl-color-default);
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(200, 207, 233, 1);
+}
+
+.nl-timeline-go-to__trigger {
+  width: 30px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 ::ng-deep .nl-timeline-context-menu {
   min-width: 150px;
+}
+
+.nl-timeline-go-to-dropdown-item {
+  display: flex;
+  padding: 8px 12px;
+  gap: 20px;
+  font-size: 14px;
+  color: var(--nl-color-default);
+  transition: background-color 0.2s;
+
+  &__left {
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__dates {
+    font-size: 12px;
+    color: var(--nl-color-secondary);
+  }
+
+  &:hover, &.hovered {
+    background-color: rgba(237, 238, 255, 1);
+    cursor: pointer;
+  }
 }
