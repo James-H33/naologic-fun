@@ -6,6 +6,7 @@
       [style.background-color]="bar.color"
       (mouseenter)="hovered.emit(bar.id)"
       (mouseleave)="hovered.emit(null)"
+      (click)="barClicked.emit(bar.id)"
     ></div>
   }
 </div>

@@ -1,3 +1,5 @@
+@use '../../../common/styles/scroll-bar.mixin.scss' as *;
+
 :host {
   --nl-timeline-cursor-style: default;
   --border: 1px solid #eee;
@@ -47,8 +49,9 @@
 .timeline {
   flex: 1;
   overflow-x: auto;
-  scrollbar-color: rgba(187, 187, 187, 0.5) rgba(0, 0, 0, 0);
-  scrollbar-width: thin;
+  // scrollbar-color: rgba(187, 187, 187, 0.5) rgba(0, 0, 0, 0);
+  // scrollbar-width: thin;
+  @include scrollbar();
 }
 
 .grid {
@@ -108,4 +111,30 @@
   height: 48px;
   border-bottom: var(--border);
   position: relative;
+}
+
+.nl-timeline-date-indicator {
+  --nl-timeline-scroll-left-position: 0px;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--nl-timeline-scroll-left-position);
+  width: 3px;
+  background-color: rgba(255, 77, 79, 0.5);
+  pointer-events: none;
+}
+
+.nl-timeline-date-indicator__label {
+  width: fit-content;
+  position: sticky;
+  top: 42px;
+  margin-left: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  background-color: rgba(255, 77, 79, 0.8);
+  padding: 2px 12px;
+  border-radius: 6px;
 }

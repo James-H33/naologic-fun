@@ -96,12 +96,14 @@ export class TimelineService {
     return daysFromTimelineStart * widthOfDay;
   }
 
-  scrollToDate(date: Date) {
-    const position = this.getColumnStartPositionOfDate(date);
+  scrollToDate(date: Date, offset?: number): void {
+    const clientWidth = this.timelineContainer()?.clientWidth ?? 0;
+    offset = offset ?? -clientWidth * 0.1;
+    const position = this.getPositionOfDate(date) + offset;
     const element = this.timelineContainer();
 
     if (element) {
-      element.scrollLeft = position - element.clientWidth / 2;
+      element.scrollLeft = position;
     }
   }
 

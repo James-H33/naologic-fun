@@ -1,3 +1,5 @@
+@use '../../../common/styles/scroll-bar.mixin.scss' as *;
+
 :host {
   display: flex;
   width: auto;
@@ -32,6 +34,10 @@
     cursor: grabbing;
     opacity: 0.8;
     pointer-events: none;
+  }
+
+  &.hovered-in-timeline-bar {
+    box-shadow: 0 0 0 3px var(--border-color);
   }
 }
 
@@ -128,6 +134,12 @@
   &--left {
     left: 16px;
   }
+}
+
+.nl-timeline-go-to__menu {
+  max-height: 300px;
+  overflow-y: auto;
+  @include scrollbar();
 }
 
 .nl-timeline-go-to__header {
