@@ -10,6 +10,7 @@ import { WorkOrderStatusColors } from '@common/types/work-order-status-colors';
 export class GanttTimelineBarComponent {
   workOrders = input<WorkOrderDocument[]>([]);
   hovered = output<string | null>();
+  barClicked = output<string>();
 
   timelineBars = computed(() => {
     const bars = [];
@@ -31,6 +32,6 @@ export class GanttTimelineBarComponent {
       bars.push(bar);
     }
 
-    return bars.sort((a, b) => a.start - b.start);
+    return bars;
   });
 }

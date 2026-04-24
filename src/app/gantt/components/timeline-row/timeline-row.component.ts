@@ -1,13 +1,10 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import {
-  asNativeElements,
   ChangeDetectionStrategy,
   Component,
   computed,
-  contentChild,
   DestroyRef,
   effect,
-  ElementRef,
   inject,
   input,
   output,
@@ -52,6 +49,7 @@ export class TimelineRowComponent {
   rowIndex = input(0);
 
   dropdownRef = viewChildren(DropdownDirective);
+  goToDropdownRef = viewChild<DropdownMenuComponent>('goToDropdownRef');
   activeDropdownWorkorder = signal<WorkOrderDocument | null>(null);
   workOrderHovered = output<WorkOrderDocument | null>();
   elementHovered = output<boolean>();
@@ -85,6 +83,17 @@ export class TimelineRowComponent {
     { id: 'edit', title: 'Edit' },
     { id: 'delete', title: 'Delete', icon: 'trash', opts: { textColor: 'danger' } },
   ];
+
+  workOrdersSortedByDate = computed(() => {
+    const workOrders = this.workOrders();
+
+    return [...workOrders].sort((a, b) => {
+      const aStart = a.data.startDate ? new Date(a.data.startDate).getTime() : 0;
+      const bStart = b.data.startDate ? new Date(b.data.startDate).getTime() : 0;
+
+      return aStart - bStart;
+    });
+  });
 
   constructor() {
     effect(() => {
@@ -128,6 +137,21 @@ export class TimelineRowComponent {
 
   onWorkOrderHover(workOrder: WorkOrderDocument | null): void {
     this.workOrderHovered.emit(workOrder);
+  }
+
+  goToWorkOrder(workOrderId: string): void {
+    const workOrder = this.workOrders().find((wo) => wo.docId === workOrderId);
+    this.goToDropdownRef()?.close();
+    this.hoveredTimelineBarId.set(null);
+
+    if (workOrder) {
+      const startDate = workOrder.data.startDate;
+      const endDate = workOrder.data.endDate;
+
+      if (startDate && endDate) {
+        this.timelineService.scrollToDate(moment(startDate).toDate());
+      }
+    }
   }
 
   onContextMenuAction(item: DropdownListItem): void {

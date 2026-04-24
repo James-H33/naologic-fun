@@ -1,4 +1,4 @@
-@for (workOrder of workOrders(); track workOrder.docId) {
+@for (workOrder of workOrdersSortedByDate(); track workOrder.docId) {
   <div
     class="timeline-item"
     #workOrder
@@ -9,6 +9,7 @@
     [style.left.px]="workOrderPositionMap()[workOrder.docId]?.left"
     [style.width.px]="workOrderPositionMap()[workOrder.docId]?.width"
     [class.mouse-down]="(isMouseDown$ | async) && draggedWorkOrder()?.docId === workOrder.docId"
+    [class.hovered-in-timeline-bar]="hoveredTimelineBarId() === workOrder.docId"
     (mouseenter)="onWorkOrderHover(workOrder)"
     (mouseleave)="onWorkOrderHover(null)"
     (mousedown)="onMouseDownWorkOrder($event, workOrder)"
@@ -49,7 +50,7 @@
   </div>
 }
 
-@if (workOrders().length) {
+@if (workOrdersSortedByDate().length) {
   <span
     (mousemove)="elementHovered.emit(true)"
     (mouseleave)="elementHovered.emit(false)"
@@ -57,25 +58,32 @@
     [attr.data-opened]="goToDropDownOpened()"
   >
     <nl-dropdown-menu
+      #goToDropdownRef
       (opened)="goToDropDownOpened.set(true)"
       (closed)="goToDropDownOpened.set(false)"
     >
-      <span class="nl-timeline-go-to__trigger" #goToDropdownTriggerRef contextTrigger>{{
-        workOrders().length
+      <span class="nl-timeline-go-to__trigger" contextTrigger>{{
+        workOrdersSortedByDate().length
       }}</span>
 
-      <div contextMenu class="nl-dropdown-menu-default">
+      <div contextMenu class="nl-dropdown-menu-default nl-timeline-go-to__menu">
         <div class="nl-timeline-go-to__header">Workorders By Date:</div>
 
         <nl-gantt-timeline-bar
-          [workOrders]="workOrders()"
+          [workOrders]="workOrdersSortedByDate()"
           (hovered)="onTimelineBarHovered($event)"
+          (barClicked)="goToWorkOrder($event)"
         ></nl-gantt-timeline-bar>
 
-        @for (workOrder of workOrders(); track workOrder.docId) {
+        @for (workOrder of workOrdersSortedByDate(); track workOrder.docId) {
           <div
             class="nl-timeline-go-to-dropdown-item"
             [class.hovered]="hoveredTimelineBarId() === workOrder.docId"
+            (mouseenter)="onTimelineBarHovered(workOrder.docId)"
+            (mouseleave)="onTimelineBarHovered(null)"
+            (click)="goToWorkOrder(workOrder.docId)"
+            role="button"
+            tabindex="0"
           >
             <div class="nl-timeline-go-to-dropdown-item__left">
               <span>{{ workOrder.data.name }}</span>

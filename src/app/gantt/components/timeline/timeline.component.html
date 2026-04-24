@@ -65,6 +65,13 @@
           [previewCardStyles]="previewCardStyles()"
           (createWorkorder)="onCreateWorkorder($event)"
         ></nl-preview-card>
+
+        <div
+          [style.--nl-timeline-scroll-left-position.px]="timelineScrollLeftPosition()"
+          class="nl-timeline-date-indicator"
+        >
+          <div class="nl-timeline-date-indicator__label">Today</div>
+        </div>
       </div>
     </div>
   </section>

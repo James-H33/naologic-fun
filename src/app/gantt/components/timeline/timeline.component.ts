@@ -13,7 +13,7 @@ import {
   input,
   output,
   signal,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Timescale, TimescaleConfig, TimescalesConfig } from '@common/types/timescales';
@@ -121,6 +121,8 @@ export class TimelineComponent implements AfterViewInit {
     this.mouseUp$.pipe(map(() => false)),
   ).pipe(takeUntilDestroyed());
 
+  timelineScrollLeftPosition = signal(0);
+
   isSpaceKeyPressed = toSignal(this.isSpaceKeyPressed$, { initialValue: false });
   spaceKeyPressed = toSignal(this.isSpaceKeyPressed$, { initialValue: false });
   isMouseDown = toSignal(this.isMouseDown$, { initialValue: false });
@@ -214,6 +216,7 @@ export class TimelineComponent implements AfterViewInit {
 
       if (body && container) {
         this.timelineService.initialize(container, body, config);
+        this.configureDateIndicator();
       }
     });
 
@@ -309,6 +312,15 @@ export class TimelineComponent implements AfterViewInit {
   onTimelineScroll(event: Event): void {
     const scrollTop = (event.target as HTMLElement)?.scrollTop ?? 0;
     this.verticalScrollPosition.set(scrollTop);
+  }
+
+  private configureDateIndicator(): void {
+    const today = moment().startOf('day').toDate();
+    const position = Math.floor(this.timelineService.getPositionOfDate(today));
+
+    if (position !== null) {
+      this.timelineScrollLeftPosition.set(position);
+    }
   }
 
   private scrollToDate(date: Date): void {
