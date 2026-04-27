@@ -68,6 +68,7 @@
   <nl-create-work-order
     [open]="isCreateWorkOrderFormOpen()"
     [workOrder]="newWorkOrder()"
+    [workCenter]="workCenterForBeingCreatedWorkOrder()"
     [workOrderError]="formError()"
     (canceled)="closeCreateWorkOrderForm()"
     (created)="onWorkOrderCreated($event)"

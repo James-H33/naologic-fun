@@ -23,6 +23,7 @@ import {
 import { DateToDateStructPipe } from '@common/pipes/date-to-date-struct.pipe';
 import { StatusComponent } from '@common/components/status/status.component';
 import { FormError } from '@common/types/form-error.interface';
+import { WorkCenterDocument } from '@common/types/work-center-document.interface';
 
 @Component({
   selector: 'nl-create-work-order',
@@ -43,6 +44,7 @@ import { FormError } from '@common/types/form-error.interface';
 export class CreateWorkOrderComponent {
   open = input<boolean>();
   workOrder = input<NewWorkOrder | null>();
+  workCenter = input<WorkCenterDocument | null>();
   workOrderError = input<FormError | null>();
   canceled = output<void>();
   created = output<{ workOrder: NewWorkOrder }>();

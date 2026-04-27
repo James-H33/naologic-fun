@@ -12,7 +12,9 @@
 
     <div class="sidebar-body">
       @for (wc of workOrdersGroupedByWorkCenterAsArray(); track wc.workCenterId) {
-        <div class="sidebar-row">{{ wc.workCenterName }}</div>
+        <div class="sidebar-row" [class.hovered]="wc.workCenterId === workCenterHovered">
+          {{ wc.workCenterName }}
+        </div>
       }
     </div>
   </section>
@@ -41,7 +43,11 @@
         (mouseleave)="onMouseLeaveGrid()"
       >
         @for (wc of workOrdersGroupedByWorkCenterAsArray(); track wc.workCenterId; let i = $index) {
-          <div class="grid-row" (mouseenter)="onRowHover(wc.workCenterId)">
+          <div
+            class="grid-row"
+            (mouseenter)="onRowHover(wc.workCenterId)"
+            [class.hovered]="wc.workCenterId === workCenterHovered"
+          >
             <nl-timeline-row
               [rowIndex]="i"
               [workOrders]="wc.workOrders"
