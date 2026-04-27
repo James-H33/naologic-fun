@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { CreateWorkOrderComponent } from '@common/components/create-work-order/create-work-order.component';
 import { DropdownListComponent } from '@common/components/dropdown-list/dropdown-list.component';
 import { DropdownMenuComponent } from '@common/components/dropdown-menu/dropdown-menu';
@@ -72,6 +79,17 @@ export class WorkOrdersGanttComponent implements OnInit {
   formError = this.store.selectSignal(selectFormError);
 
   workCentersMap = this.store.selectSignal(selectWorkCentersMap);
+
+  workCenterForBeingCreatedWorkOrder = computed(() => {
+    const workCenterId = this.newWorkOrder()?.workCenterId;
+
+    if (workCenterId) {
+      return this.workCentersMap()[workCenterId] || null;
+    }
+
+    return null;
+  });
+
   timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
   viewId = 'v1';
 

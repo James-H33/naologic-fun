@@ -44,6 +44,10 @@
   text-wrap: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &.hovered {
+    background-color: rgba(247, 249, 252, 1);
+  }
 }
 
 .timeline {
@@ -111,6 +115,10 @@
   height: 48px;
   border-bottom: var(--border);
   position: relative;
+
+  &.hovered {
+    background-color: rgba(232, 234, 230, 0.2);
+  }
 }
 
 .nl-timeline-date-indicator {
