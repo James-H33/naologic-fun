@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   viewChild,
@@ -37,6 +38,10 @@ import {
 } from './store/gantt.selectors';
 
 import { selectWorkOrdersGroupedByWorkCenterForGantt } from './store/gantt.selectors';
+import { SocketService } from '@common/services/socket/socket.service';
+import { SocketMessages } from '@common/services/socket/socket-messages.enum';
+import { WorkOrderUpdatedWebSocketMessage } from '@common/types/web-socket/workorder-updated-websocket-message.interface';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'nl-workorders',
@@ -59,7 +64,9 @@ import { selectWorkOrdersGroupedByWorkCenterForGantt } from './store/gantt.selec
 export class WorkOrdersGanttComponent implements OnInit {
   dropdownMenu = viewChild(DropdownMenuComponent);
 
-  store = inject(Store);
+  private store = inject(Store);
+  private socketService = inject(SocketService);
+  private destroyRef = inject(DestroyRef);
 
   title = 'Workorders';
 
@@ -104,6 +111,7 @@ export class WorkOrdersGanttComponent implements OnInit {
   ngOnInit() {
     this.store.dispatch(GanttActions.loadTimeScaleConfigStart({ viewId: this.viewId }));
     this.store.dispatch(GanttActions.loadViewDataStart({ viewId: this.viewId }));
+    this.watchForWebsocketUpdates();
   }
 
   onTimescaleFilterOptionSelected(event: { id: string; title: string }): void {
@@ -185,5 +193,31 @@ export class WorkOrdersGanttComponent implements OnInit {
 
   openCreateWorkCenterForm() {
     this.store.dispatch(GanttActions.openWorkCenterForm());
+  }
+
+  private watchForWebsocketUpdates() {
+    this.socketService
+      .listen<WorkOrderUpdatedWebSocketMessage>(SocketMessages.WORK_ORDER_CREATED)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((payload) => {
+        this.store.dispatch(
+          GanttActions.getUpdatedWorkOrders({
+            viewId: this.viewId,
+            updatedIds: payload.workOrderIds,
+          }),
+        );
+      });
+
+    this.socketService
+      .listen<WorkOrderUpdatedWebSocketMessage>(SocketMessages.WORK_ORDER_UPDATED)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((payload) => {
+        this.store.dispatch(
+          GanttActions.getUpdatedWorkOrders({
+            viewId: this.viewId,
+            updatedIds: payload.workOrderIds,
+          }),
+        );
+      });
   }
 }
