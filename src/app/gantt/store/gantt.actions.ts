@@ -72,5 +72,7 @@ export const GanttActions = createActionGroup({
 
     openWorkOrderForm: props<{ date: Date; workCenterId: string }>(),
     closeWorkOrderForm: emptyProps(),
+
+    getUpdatedWorkOrders: props<{ viewId: string; updatedIds: string[] }>(),
   },
 });

@@ -8,23 +8,22 @@ import { Timescale, TimescalesConfig } from '@common/types/timescales';
 import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { combineLatest, map, switchMap, timer } from 'rxjs';
+import { EMPTY, filter, map, switchMap, timer } from 'rxjs';
 import { GanttService } from '../services/gantt.service';
 import { GanttActions } from './gantt.actions';
+import { concatLatestFrom } from '@ngrx/operators';
+import { Store } from '@ngrx/store';
+import { selectViewId } from './gantt.selectors';
+import { selectWorkOrders } from '@common/store/work-order/work-order.selectors';
 
 export const loadWorkorders$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    ganttService = inject(GanttService),
-    workOrderAPIService = inject(WorkOrderAPIService),
-    workCenterAPIService = inject(WorkCenterAPIService),
-  ) => {
+  (actions$ = inject(Actions), ganttService = inject(GanttService)) => {
     return actions$.pipe(
       ofType(GanttActions.loadViewDataStart),
       switchMap((action) => {
         const { viewId } = action;
 
-        return getDataForView(viewId, ganttService, workOrderAPIService, workCenterAPIService).pipe(
+        return ganttService.getFullViewData(viewId).pipe(
           switchMap(({ workOrderIds, workCenterIds, workOrders, workCenters, name }) => {
             return [
               GanttActions.loadViewDataSuccess({ workOrderIds, workCenterIds, name }),
@@ -226,28 +225,33 @@ export const deleteWorkOrder$ = createEffect(
   { functional: true },
 );
 
-function getDataForView(
-  viewId: string,
-  ganttService: GanttService,
-  workOrderAPIService: WorkOrderAPIService,
-  workCenterAPIService: WorkCenterAPIService,
-) {
-  return ganttService.getViewData(viewId).pipe(
-    switchMap(({ workOrderIds, workCenterIds, ...data }) => {
-      return combineLatest([
-        workOrderAPIService.getWorkOrders(workOrderIds),
-        workCenterAPIService.getWorkCenters(workCenterIds),
-      ]).pipe(
-        map(([workOrders, workCenters]) => {
-          return {
-            ...data,
-            workOrderIds,
-            workCenterIds,
-            workOrders,
-            workCenters,
-          };
-        }),
-      );
-    }),
-  );
-}
+export const getWorkOrdersForView$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store), ganttService = inject(GanttService)) =>
+    actions$.pipe(
+      ofType(GanttActions.getUpdatedWorkOrders),
+      concatLatestFrom(() => [store.select(selectViewId), store.select(selectWorkOrders)]),
+      switchMap(([action, viewId]) => {
+        const { updatedIds } = action;
+        const updatedIdsMap = Object.fromEntries(updatedIds.map((id) => [id, true]));
+
+        return ganttService.getViewData(viewId as string).pipe(
+          switchMap((viewData) => {
+            const workOrderIds = viewData.workOrderIds.filter((id) => updatedIdsMap[id]);
+
+            if (workOrderIds.length === 0) {
+              return EMPTY;
+            }
+
+            return ganttService.workOrderAPIService.getWorkOrders(workOrderIds).pipe(
+              map((workOrders) =>
+                WorkOrderActions.addWorkOrders({
+                  workOrders,
+                }),
+              ),
+            );
+          }),
+        );
+      }),
+    ),
+  { functional: true },
+);
