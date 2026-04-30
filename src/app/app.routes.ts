@@ -1,17 +1,34 @@
 import { Routes } from '@angular/router';
-import { WorkOrdersGanttComponent } from './gantt/work-orders-gantt.component';
+import { authTokenResolver } from '@common/resolvers/auth-token.resolver';
 import { workspaceIdResolver } from '@common/resolvers/workspace.resolver';
+import { WorkOrdersGanttComponent } from './gantt/work-orders-gantt.component';
+import { LoginComponent } from './login/login.component';
+import { LogoutComponent } from './logout/logout.component';
 
 export const routes: Routes = [
   {
-    path: 'timeline/:viewId',
-    component: WorkOrdersGanttComponent,
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'logout',
+    component: LogoutComponent,
+  },
+  {
+    path: ':workspaceId',
     resolve: {
-      resolver: workspaceIdResolver,
+      workspaceId: workspaceIdResolver,
+      authToken: authTokenResolver,
     },
+    children: [
+      {
+        path: 'timeline/:viewId',
+        component: WorkOrdersGanttComponent,
+      },
+    ],
   },
   {
     path: '**',
-    redirectTo: 'timeline/123',
+    redirectTo: 'login',
   },
 ];
