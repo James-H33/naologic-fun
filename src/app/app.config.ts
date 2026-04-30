@@ -11,12 +11,13 @@ import { WorkCenterStoreModule } from '@common/store/work-centers/work-center-st
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { workspaceInterceptor } from '@common/interceptors/workspace-id.interceptor';
 import { ApplicationStoreModule } from '@common/store/application/application-store.module';
+import { authTokenInterceptor } from '@common/interceptors/auth-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([workspaceInterceptor])),
+    provideHttpClient(withInterceptors([workspaceInterceptor, authTokenInterceptor])),
 
     importProvidersFrom([
       // Stores

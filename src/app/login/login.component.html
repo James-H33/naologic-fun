@@ -1,0 +1,45 @@
+<div class="nl-login">
+  <div class="nl-login-form">
+    <div class="nl-login-form__row">
+      <label for="username">Username:</label>
+      <input
+        nlInput
+        id="username"
+        placeholder="username or email"
+        [formField]="form.username"
+        (keydown.enter)="login()"
+        type="text"
+      />
+    </div>
+
+    <div class="nl-login-form__row">
+      <label for="password">Password:</label>
+      <input
+        nlInput
+        id="password"
+        placeholder="password"
+        [formField]="form.password"
+        (keydown.enter)="login()"
+        type="password"
+      />
+    </div>
+
+    @if (errorMessage()) {
+      <div class="nl-login-form__row nl-login-form__row--error">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="nl-login-form__row nl-login-form__row--actions">
+      <button
+        nlButton
+        nlButtonVariant="primary"
+        (click)="login()"
+        (keydown.enter)="login()"
+        [disabled]="!form().valid()"
+      >
+        Login
+      </button>
+    </div>
+  </div>
+</div>
