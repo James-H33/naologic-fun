@@ -233,8 +233,8 @@ export class TimelineRowComponent {
         positionMap[workOrder.docId] = { left, width };
         this.workOrderPositionMap.set({ ...positionMap });
       }),
-      takeUntilDestroyed(this.destroyRef),
       takeUntil(this.mouseUp$),
+      takeUntilDestroyed(this.destroyRef),
     );
 
     saveOnDragEnd$.subscribe();
@@ -286,8 +286,8 @@ export class TimelineRowComponent {
 
         this.workOrderPositionMap.set({ ...positionMap });
       }),
-      takeUntilDestroyed(this.destroyRef),
       takeUntil(this.mouseUp$),
+      takeUntilDestroyed(this.destroyRef),
     );
 
     saveOnDragEnd$.subscribe();

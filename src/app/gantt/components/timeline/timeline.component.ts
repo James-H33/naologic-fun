@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   HostBinding,
@@ -61,6 +62,7 @@ export class TimelineComponent implements AfterViewInit {
   updateWorkOrder = output<WorkOrderDocument>();
 
   timelineService = inject(TimelineService);
+  destroyRef = inject(DestroyRef);
 
   workOrdersGroupedByWorkCenterAsArray = computed(() => {
     const workOrdersGroupedByWorkCenter = this.workOrdersGroupedByWorkCenter() || {};
@@ -108,18 +110,18 @@ export class TimelineComponent implements AfterViewInit {
       filter((event) => event.key === ' '),
       map(() => false),
     ),
-  ).pipe(takeUntilDestroyed());
+  ).pipe(takeUntilDestroyed(this.destroyRef));
 
   isMouseWithinTimeline$ = toSignal(
     merge(this.mouseEnter$.pipe(map(() => true)), this.mouseLeave$.pipe(map(() => false))).pipe(
-      takeUntilDestroyed(),
+      takeUntilDestroyed(this.destroyRef),
     ),
   );
 
   isMouseDown$ = merge(
     this.mouseDown$.pipe(map(() => true)),
     this.mouseUp$.pipe(map(() => false)),
-  ).pipe(takeUntilDestroyed());
+  ).pipe(takeUntilDestroyed(this.destroyRef));
 
   timelineScrollLeftPosition = signal(0);
 
@@ -351,7 +353,7 @@ export class TimelineComponent implements AfterViewInit {
             scrollableArea.scrollTop += -event.movementY;
           }
         }),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
@@ -383,7 +385,7 @@ export class TimelineComponent implements AfterViewInit {
             this.showCreateWorkorderPreview(relativeX, relativeY);
           }
         }),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }

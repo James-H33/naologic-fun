@@ -47,6 +47,9 @@ export const selectWorkOrdersGroupedByWorkCenter = createSelector(
   },
 );
 
+export const selectWorkOrderById = (id: string) =>
+  createSelector(selectWorkOrdersMap, (workOrdersMap) => workOrdersMap[id] || null);
+
 export const selectEditingWorkOrder = createSelector(
   selectWorkOrders,
   selectEditingWorkOrderId,
