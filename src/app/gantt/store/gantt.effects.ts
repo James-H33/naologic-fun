@@ -8,13 +8,17 @@ import { Timescale, TimescalesConfig } from '@common/types/timescales';
 import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
 import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, filter, map, switchMap, timer } from 'rxjs';
+import { EMPTY, filter, map, of, startWith, switchMap, timer } from 'rxjs';
 import { GanttService } from '../services/gantt.service';
 import { GanttActions } from './gantt.actions';
 import { concatLatestFrom } from '@ngrx/operators';
 import { Store } from '@ngrx/store';
 import { selectViewId } from './gantt.selectors';
-import { selectWorkOrders } from '@common/store/work-order/work-order.selectors';
+import {
+  selectWorkOrderById,
+  selectWorkOrders,
+} from '@common/store/work-order/work-order.selectors';
+import { optimisticUpdate } from '@common/rxjs-extensions/optimistic-update';
 
 export const loadWorkorders$ = createEffect(
   (actions$ = inject(Actions), ganttService = inject(GanttService)) => {
@@ -115,30 +119,38 @@ export const createWorkOrder$ = createEffect(
   { functional: true },
 );
 
-export const updateWorkOrderDates$ = createEffect(
-  (actions$ = inject(Actions), workOrderService = inject(WorkOrderService)) => {
+export const updateWorkOrderDatesOptimistic$ = createEffect(
+  (
+    actions$ = inject(Actions),
+    workOrderService = inject(WorkOrderService),
+    store = inject(Store),
+  ) => {
     return actions$.pipe(
       ofType(GanttActions.updateWorkOrderDates),
-      switchMap((action) => {
-        const { workOrder } = action;
+      concatLatestFrom((action) => [store.select(selectWorkOrderById(action.workOrder.docId))]),
+      optimisticUpdate({
+        run: ([action]) => {
+          const { workOrder } = action;
 
-        return workOrderService.updateWorkOrder(workOrder).pipe(
-          switchMap(({ result, error }) => {
-            if (error) {
-              return [GanttActions.setFormError({ error })];
-            }
-
-            return [
-              GanttActions.updateWorkOrderDatesSuccess({
+          return workOrderService.updateWorkOrder(workOrder).pipe(
+            map(({ result }) => {
+              return GanttActions.updateWorkOrderDatesSuccess({
                 workOrderId: result!.docId,
                 workCenterId: workOrder.data.workCenterId as string,
-              }),
+              });
+            }),
+            startWith(
               WorkOrderActions.addWorkOrders({
-                workOrders: [result!],
+                workOrders: [workOrder!],
               }),
-            ];
-          }),
-        );
+            ),
+          );
+        },
+        onError: (_, [, workOrder]) => {
+          return WorkOrderActions.addWorkOrders({
+            workOrders: [workOrder!],
+          });
+        },
       }),
     );
   },

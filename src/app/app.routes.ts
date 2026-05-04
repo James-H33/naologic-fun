@@ -4,6 +4,7 @@ import { workspaceIdResolver } from '@common/resolvers/workspace.resolver';
 import { WorkOrdersGanttComponent } from './gantt/work-orders-gantt.component';
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
+import { authGuard } from '@common/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -20,6 +21,7 @@ export const routes: Routes = [
       workspaceId: workspaceIdResolver,
       authToken: authTokenResolver,
     },
+    canActivate: [authGuard],
     children: [
       {
         path: 'timeline/:viewId',

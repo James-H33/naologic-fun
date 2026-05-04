@@ -7,11 +7,24 @@ import { SocketMessages } from './socket-messages.enum';
   providedIn: 'root',
 })
 export class SocketService {
-  private socket: Socket;
+  private socket!: Socket;
   private messages = new Subject<{ type: SocketMessages; body: unknown }>();
+  private isConnected = false;
 
-  constructor() {
-    this.socket = io('http://localhost:3000');
+  init(credentials: { workspaceId: string; authToken: string }): void {
+    if (this.isConnected) {
+      return;
+    }
+
+    this.isConnected = true;
+
+    this.socket = io('http://localhost:3000', {
+      extraHeaders: {
+        'workspace-id': credentials.workspaceId,
+        Authorization: `Bearer ${credentials.authToken}`,
+      },
+    });
+
     this.listenToMessages();
   }
 
@@ -27,18 +40,21 @@ export class SocketService {
     this.socket.emit('message', message);
   }
 
-  // Observable to receive messages from the server
   private listenToMessages(): void {
-    this.socket.on(SocketMessages.WORK_ORDER_CREATED, (message) => {
-      this.messages.next({ type: SocketMessages.WORK_ORDER_CREATED, body: message });
-    });
+    this.socket.onAny((event, ...args) => {
+      const body = args?.[0];
 
-    this.socket.on(SocketMessages.WORK_ORDER_UPDATED, (message) => {
-      this.messages.next({ type: SocketMessages.WORK_ORDER_UPDATED, body: message });
-    });
-
-    this.socket.on(SocketMessages.WORK_ORDER_DELETED, (message) => {
-      this.messages.next({ type: SocketMessages.WORK_ORDER_DELETED, body: message });
+      switch (event) {
+        case SocketMessages.WORK_ORDER_CREATED:
+          this.messages.next({ type: SocketMessages.WORK_ORDER_CREATED, body });
+          break;
+        case SocketMessages.WORK_ORDER_UPDATED:
+          this.messages.next({ type: SocketMessages.WORK_ORDER_UPDATED, body });
+          break;
+        case SocketMessages.WORK_ORDER_DELETED:
+          this.messages.next({ type: SocketMessages.WORK_ORDER_DELETED, body });
+          break;
+      }
     });
   }
 }
