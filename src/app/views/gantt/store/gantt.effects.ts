@@ -248,7 +248,7 @@ export const getWorkOrdersForView$ = createEffect(
 
         return ganttService.getViewData(viewId as string).pipe(
           switchMap((viewData) => {
-            const workOrderIds = viewData.workOrderIds.filter((id) => updatedIdsMap[id]);
+            const workOrderIds = viewData.data.workOrderIds.filter((id) => updatedIdsMap[id]);
 
             if (workOrderIds.length === 0) {
               return EMPTY;

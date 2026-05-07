@@ -15,7 +15,6 @@ export class App implements OnInit {
   private store = inject(Store);
 
   ngOnInit(): void {
-    console.log('App initialized');
     this.store.dispatch(ApplicationActions.init());
   }
 }

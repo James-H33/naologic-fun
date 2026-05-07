@@ -54,7 +54,7 @@ export const redirectAfterLogin$ = createEffect(
     return actions$.pipe(
       ofType(ApplicationActions.loginSuccess),
       tap((action) => {
-        router.navigate([`${action.workspaceId}/timeline/123`]);
+        router.navigate([`${action.workspaceId}/v/timelines`]);
       }),
     );
   },

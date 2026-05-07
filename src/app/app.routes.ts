@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '@common/guards/auth.guard';
 import { authTokenResolver } from '@common/resolvers/auth-token.resolver';
 import { workspaceIdResolver } from '@common/resolvers/workspace.resolver';
-import { WorkOrdersGanttComponent } from './gantt/work-orders-gantt.component';
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
-import { authGuard } from '@common/guards/auth.guard';
+// import { ViewsComponent } from './views/views.component';
 
 export const routes: Routes = [
   {
@@ -16,18 +16,21 @@ export const routes: Routes = [
     component: LogoutComponent,
   },
   {
-    path: ':workspaceId',
+    path: ':workspaceId/v',
     resolve: {
       workspaceId: workspaceIdResolver,
       authToken: authTokenResolver,
     },
     canActivate: [authGuard],
-    children: [
-      {
-        path: 'timeline/:viewId',
-        component: WorkOrdersGanttComponent,
-      },
-    ],
+    loadChildren: () => import('./views/views.routes').then((m) => m.viewsRoutes),
+
+    // component: ViewsComponent,
+    // children: [
+    // {
+    //   path: 'timeline/:viewId',
+    //   component: WorkOrdersGanttComponent,
+    // },
+    // ],
   },
   {
     path: '**',

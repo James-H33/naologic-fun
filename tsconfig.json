@@ -17,7 +17,7 @@
     "baseUrl": "./",
     "paths": {
       "@common/*": ["src/app/common/*"],
-      "@gantt/*": ["src/app/gantt/*"],
+      "@gantt/*": ["src/app/views/gantt/*"],
     }
   },
   "angularCompilerOptions": {
