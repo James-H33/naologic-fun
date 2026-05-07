@@ -9,8 +9,10 @@ import { combineLatest, map, Observable, tap, switchMap } from 'rxjs';
 interface ViewDataResponse {
   viewId: string;
   name: string;
-  workOrderIds: string[];
-  workCenterIds: string[];
+  data: {
+    workOrderIds: string[];
+    workCenterIds: string[];
+  };
 }
 
 @Injectable({
@@ -34,14 +36,18 @@ export class GanttService {
 
   getFullViewData(viewId: string) {
     return this.getViewData(viewId).pipe(
-      switchMap(({ workOrderIds, workCenterIds, ...data }) => {
+      switchMap((payload) => {
+        const { viewId, name, data } = payload;
+        const { workOrderIds, workCenterIds } = data;
+
         return combineLatest([
           this.workOrderAPIService.getWorkOrders(workOrderIds),
           this.workCenterAPIService.getWorkCenters(workCenterIds),
         ]).pipe(
           map(([workOrders, workCenters]) => {
             return {
-              ...data,
+              viewId,
+              name,
               workOrderIds,
               workCenterIds,
               workOrders,

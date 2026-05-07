@@ -1,0 +1,38 @@
+<div class="nl-view-header">
+  <div class="nl-view-header__title">Timelines</div>
+
+  <div class="nl-view-header__divider"></div>
+
+  <div class="nl-view-header__right">
+    <div class="nl-view-header__item">
+      <span class="nl-item-count">1 Timelines</span>
+    </div>
+  </div>
+</div>
+
+<div class="nl-table">
+  <div class="nl-table__headers">
+    @for (header of headers; track $index) {
+      <div class="nl-table__header">
+        <div class="nl-table__header-title">{{ header.label }}</div>
+      </div>
+    }
+
+    <div class="nl-table__header">
+      <div class="nl-table__header-title"></div>
+    </div>
+  </div>
+
+  <div class="nl-table__body">
+    @for (item of timelinesWithLinks(); track item.id) {
+      <div class="nl-table__row">
+        <div class="nl-table__cell">
+          <a [routerLink]="item.link">{{ item.name }}</a>
+        </div>
+        <div class="nl-table__cell">{{ item.dateRange }}</div>
+        <div class="nl-table__cell">{{ item.createdAt }}</div>
+        <div class="nl-table__cell">...</div>
+      </div>
+    }
+  </div>
+</div>

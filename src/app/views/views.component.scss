@@ -1,0 +1,32 @@
+:host {
+  overflow: hidden;
+}
+
+.nl-views-hub {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding-top: 30px;
+}
+
+.nl-views-hub__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--12px);
+  padding: var(--8px);
+  border-bottom: 1px solid var(--cu-border-default);
+  border-radius: 0 var(--cu-radii-4) 0 0;
+}
+
+.nl-views-hub__title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--cu-color-default);
+}
+
+.nl-views-hub__content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}

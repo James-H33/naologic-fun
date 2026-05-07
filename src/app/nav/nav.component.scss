@@ -1,8 +1,41 @@
-.nav-container {
+.nl-nav-container {
   height: var(--nl-nav-height);
   width: 100%;
   display: flex;
   align-items: center;
   background-color: rgba(255, 255, 255, 1);
   padding-left: var(--nl-main-content-indent);
+}
+
+.nl-nav__items {
+  width: 100%;
+  display: flex;
+  gap: 24px;
+  margin-left: 32px;
+  margin-right: 32px;
+}
+
+.nl-nav__item {
+  font-size: var(--nl-font-size-medium);
+  color: var(--nl-color-default);
+  padding: 8px 4px 2px 4px;
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+
+  &.active {
+    color: var(--nl-color-primary);
+    font-weight: 500;
+  }
+
+  &:hover {
+    color: var(--nl-color-primary);
+    border-bottom: 2px solid var(--nl-color-primary);
+  }
+}
+
+.nl-nav__right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
