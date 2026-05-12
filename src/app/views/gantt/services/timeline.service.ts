@@ -145,7 +145,7 @@ export class TimelineService {
     const endDate = moment(workOrder.endDate);
     const scale = this.config()?.scale;
 
-    const timelineStartDate = moment(timelineDates[0].date);
+    const timelineStartDate = moment(timelineDates?.[0]?.date);
 
     const widthOfDay = this.getWidthOfDayBasedOnScale(scale);
     const days = endDate.diff(startDate, 'days') + 1; // +1 to include the start date
@@ -163,7 +163,7 @@ export class TimelineService {
     relativeX: number,
   ): Date {
     const dates = this.timelineDates();
-    const col = dates[colIndex];
+    const col = dates[colIndex] as { label: string; date: Date };
     const colWidth = this.config()?.colWidth ?? 0;
 
     if (scale === Timescale.Month) {

@@ -18,7 +18,9 @@
     "paths": {
       "@common/*": ["src/app/common/*"],
       "@gantt/*": ["src/app/views/gantt/*"],
-    }
+    },
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
