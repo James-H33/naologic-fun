@@ -29,8 +29,11 @@
         <div class="nl-table__cell">
           <a [routerLink]="item.link">{{ item.name }}</a>
         </div>
-        <div class="nl-table__cell">{{ item.dateRange }}</div>
-        <div class="nl-table__cell">{{ item.createdAt }}</div>
+        <div class="nl-table__cell">
+          {{ item.dateRange.start | date: 'shortDate' }} -
+          {{ item.dateRange.end | date: 'shortDate' }}
+        </div>
+        <div class="nl-table__cell">{{ item.createdAt | date: 'shortDate' }}</div>
         <div class="nl-table__cell">...</div>
       </div>
     }

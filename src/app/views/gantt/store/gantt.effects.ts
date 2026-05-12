@@ -1,24 +1,24 @@
 import { inject } from '@angular/core';
+import { optimisticUpdate } from '@common/rxjs-extensions/optimistic-update';
 import { WorkCenterAPIService } from '@common/services/api/work-center-api.service';
 import { WorkOrderAPIService } from '@common/services/api/work-order-api.service';
 import { WorkOrderService } from '@common/services/work-order.service';
 import { WorkCenterActions } from '@common/store/work-centers/work-center.actions';
 import { WorkOrderActions } from '@common/store/work-order/work-order.actions';
-import { Timescale, TimescalesConfig } from '@common/types/timescales';
-import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
-import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, filter, map, of, startWith, switchMap, timer } from 'rxjs';
-import { GanttService } from '../services/gantt.service';
-import { GanttActions } from './gantt.actions';
-import { concatLatestFrom } from '@ngrx/operators';
-import { Store } from '@ngrx/store';
-import { selectViewId } from './gantt.selectors';
 import {
   selectWorkOrderById,
   selectWorkOrders,
 } from '@common/store/work-order/work-order.selectors';
-import { optimisticUpdate } from '@common/rxjs-extensions/optimistic-update';
+import { Timescale, TimescalesConfig } from '@common/types/timescales';
+import { loadFromStorageByKey } from '@common/utils/load-from-storage-by-key.function';
+import { setDataInStorageByKey } from '@common/utils/set-data-in-storage-by-key.function';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { concatLatestFrom } from '@ngrx/operators';
+import { Store } from '@ngrx/store';
+import { EMPTY, map, startWith, switchMap, timer } from 'rxjs';
+import { GanttService } from '../services/gantt.service';
+import { GanttActions } from './gantt.actions';
+import { selectViewId } from './gantt.selectors';
 
 export const loadWorkorders$ = createEffect(
   (actions$ = inject(Actions), ganttService = inject(GanttService)) => {

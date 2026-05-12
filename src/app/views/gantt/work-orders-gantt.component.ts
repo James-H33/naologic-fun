@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   viewChild,
@@ -37,6 +38,8 @@ import {
   selectWorkOrderFormOpen,
 } from './store/gantt.selectors';
 
+import { selectViewId } from '@common/store/views/views.selectors';
+
 import { selectWorkOrdersGroupedByWorkCenterForGantt } from './store/gantt.selectors';
 import { SocketService } from '@common/services/socket/socket.service';
 import { SocketMessages } from '@common/services/socket/socket-messages.enum';
@@ -67,6 +70,7 @@ export class WorkOrdersGanttComponent implements OnInit {
   private store = inject(Store);
   private socketService = inject(SocketService);
   private destroyRef = inject(DestroyRef);
+  private viewId = this.store.selectSignal(selectViewId);
 
   title = 'Workorders';
 
@@ -98,7 +102,6 @@ export class WorkOrdersGanttComponent implements OnInit {
   });
 
   timescaleConfig = this.store.selectSignal(selectTimescaleConfig);
-  viewId = 'v1';
 
   TimescaleNames = TimescaleNames;
 
@@ -108,9 +111,18 @@ export class WorkOrdersGanttComponent implements OnInit {
     { id: Timescale.Month, title: TimescaleNames.month },
   ];
 
-  ngOnInit() {
-    this.store.dispatch(GanttActions.loadTimeScaleConfigStart({ viewId: this.viewId }));
-    this.store.dispatch(GanttActions.loadViewDataStart({ viewId: this.viewId }));
+  constructor() {
+    effect(() => {
+      const viewId = this.viewId();
+
+      if (viewId) {
+        this.store.dispatch(GanttActions.loadTimeScaleConfigStart({ viewId }));
+        this.store.dispatch(GanttActions.loadViewDataStart({ viewId }));
+      }
+    });
+  }
+
+  ngOnInit(): void {
     this.watchForWebsocketUpdates();
   }
 
@@ -120,7 +132,7 @@ export class WorkOrdersGanttComponent implements OnInit {
 
     this.store.dispatch(
       GanttActions.setTimescaleConfig({
-        viewId: this.viewId,
+        viewId: this.viewId(),
         config,
       }),
     );
@@ -202,7 +214,7 @@ export class WorkOrdersGanttComponent implements OnInit {
       .subscribe((payload) => {
         this.store.dispatch(
           GanttActions.getUpdatedWorkOrders({
-            viewId: this.viewId,
+            viewId: this.viewId(),
             updatedIds: payload.workOrderIds,
           }),
         );
@@ -214,7 +226,7 @@ export class WorkOrdersGanttComponent implements OnInit {
       .subscribe((payload) => {
         this.store.dispatch(
           GanttActions.getUpdatedWorkOrders({
-            viewId: this.viewId,
+            viewId: this.viewId(),
             updatedIds: payload.workOrderIds,
           }),
         );

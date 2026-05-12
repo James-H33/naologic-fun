@@ -15,8 +15,8 @@ import { Store } from '@ngrx/store';
 export class NavComponent {
   store = inject(Store);
   navItem = signal({
-    name: 'Timeline',
-    type: ViewType.Timeline,
+    name: 'Timelines',
+    type: ViewType.Timelines,
   });
 
   viewType = ViewType;
@@ -26,13 +26,13 @@ export class NavComponent {
   private navItems = signal([
     ViewType.WorkOrders,
     ViewType.WorkCenters,
-    ViewType.Timeline,
+    ViewType.Timelines,
     ViewType.People,
     ViewType.Sales,
   ]);
 
   private navNames = {
-    [ViewType.Timeline]: 'Timelines',
+    [ViewType.Timelines]: 'Timelines',
     [ViewType.WorkOrders]: 'Orders',
     [ViewType.WorkCenters]: 'Centers',
     [ViewType.People]: 'People',
@@ -45,7 +45,7 @@ export class NavComponent {
     return items.map((view) => ({
       name: this.navNames[view as ViewType],
       url: getViewLinkByType(view, this.workspaceId() as string),
-      isActive: ViewType.Timeline === view, // TODO: Get active view from store
+      isActive: ViewType.Timelines === view, // TODO: Get active view from store
     }));
   });
 }

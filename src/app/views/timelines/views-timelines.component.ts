@@ -1,19 +1,23 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { selectWorkspaceId } from '@common/store/application/application.selectors';
 import { ViewsActions } from '@common/store/views/views.actions';
+import { selectTimelines } from '@common/store/views/views.selectors';
 import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'nl-views-timelines',
   templateUrl: './views-timelines.component.html',
   styleUrls: ['./views-timelines.component.scss'],
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
 })
 export class ViewsTimelinesComponent implements OnInit {
   router = inject(Router);
   store = inject(Store);
 
-  workspaceId = 'workspace-1';
+  timelines = this.store.selectSignal(selectTimelines);
+  workspaceId = this.store.selectSignal(selectWorkspaceId);
 
   headers = [
     { id: 'name', label: 'Name' },
@@ -21,29 +25,17 @@ export class ViewsTimelinesComponent implements OnInit {
     { id: 'createdAt', label: 'Created At' },
   ];
 
-  timelines = signal([
-    {
-      id: 'timeline-1',
-      name: 'Timeline 1',
-      dateRange: 'Jan 1, 2024 - Jan 31, 2024',
-      createdAt: 'Dec 15, 2023',
-    },
-  ]);
-
   timelinesWithLinks = computed(() => {
     const timelines = this.timelines();
+    const workspaceId = this.workspaceId();
 
     return timelines.map((timeline) => ({
       ...timeline,
-      link: `/${this.workspaceId}/v/timeline/${timeline.id}`,
+      link: `/${workspaceId}/v/timeline/${timeline.id}`,
     }));
   });
 
   ngOnInit(): void {
     this.store.dispatch(ViewsActions.loadTimelines());
   }
-
-  // goToTimeline(timelineId: string) {
-  //   this.router.navigate([`/${this.workspaceId}/timeline/${timelineId}`]);
-  // }
 }

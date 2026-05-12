@@ -1,5 +1,5 @@
 export enum ViewType {
-  Timeline = 'timeline',
+  Timelines = 'timelines',
   WorkOrders = 'orders',
   WorkCenters = 'workcenters',
   People = 'people',

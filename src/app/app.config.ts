@@ -12,6 +12,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { workspaceInterceptor } from '@common/interceptors/workspace-id.interceptor';
 import { ApplicationStoreModule } from '@common/store/application/application-store.module';
 import { authTokenInterceptor } from '@common/interceptors/auth-token.interceptor';
+import { ViewsStoreModule } from '@common/store/views/views-store.module';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
       ApplicationStoreModule,
       WorkOrderStoreModule,
       WorkCenterStoreModule,
+      ViewsStoreModule,
     ]),
   ],
 };
